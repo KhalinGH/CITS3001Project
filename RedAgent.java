@@ -1,14 +1,14 @@
 import java.util.ArrayList;
 
 public class RedAgent {
-    ArrayList<String> greenMembersFollowing = new ArrayList<String>();
+    ArrayList<String> greenFollowers = new ArrayList<String>();
 
     public RedAgent() {
         
     }
 
-    public int makeMove(Gamestate game) {
-        
+    public int makeMove(ArrayList<GreenTeamMember> graph) {
+        return ;
     }
 
 

@@ -7,7 +7,7 @@ public class BlueAgent {
         
     }
 
-    public int makeMove(GameState game) {
+    public int makeMove(ArrayList<GreenTeamMember> graph) {
         return ;
     }
 
