@@ -7,7 +7,7 @@ import RedAgent.java;
 import GreenTeamMember.java;
 import GreyTeamMember.java;
 
-public class Gamestate {
+public class GameState {
     ArrayList<GreenTeamMember> graph = new ArrayList<GreenTeamMember>();
 
     public void make_graph() {
@@ -46,7 +46,7 @@ public class Gamestate {
             Scanner myFileReader = new Scanner(inputFile);
             while (myFileReader.hasNextLine()) {
                 String data = myFileReader.nextLine();
-                
+
             }
             myFileReader.close();
         }
