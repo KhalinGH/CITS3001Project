@@ -1,11 +1,10 @@
 import java.util.ArrayList;
 
-public class GreenTeamMember{
-    long uncertainty;
-    //not sure the data type
-    //opinion;
+public class GreenTeamMember {
+    double uncertainty;
+    double opinion;
 
-    public GreenTeamMember(){
+    public GreenTeamMember() {
         
     }
 

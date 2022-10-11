@@ -1,9 +1,9 @@
 import java.util.ArrayList;
 
-public class GreyeamMember{
-    boolean good;
+public class GreyTeamMember {
+    boolean is_good;
 
-    public GreyTeamMember(){
-        
+    public GreyTeamMember(boolean is_good) {
+        this.is_good = is_good;
     }
 }
