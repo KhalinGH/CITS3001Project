@@ -1,11 +1,8 @@
+package CITS3001Project;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
-import BlueAgent.java;
-import RedAgent.java;
-import GreenTeamMember.java;
-import GreyTeamMember.java;
 
 public class GameState {
     ArrayList<GreenTeamMember> graph = new ArrayList<GreenTeamMember>();
@@ -33,7 +30,7 @@ public class GameState {
         else {assert(input.compareTo("f") == 0);
             File inputFile;
             while (true) {
-                System.out.println("Enter name of input file: ");
+                System.out.println("Enter name of input file.");
                 input = scanner.nextLine();
                 try {
                     inputFile = new File(input);
