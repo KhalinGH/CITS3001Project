@@ -8,7 +8,7 @@ public class RedAgent {
     }
 
     public int makeMove(ArrayList<GreenTeamMember> graph) {
-        return ;
+        return 0;
     }
 
 

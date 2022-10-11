@@ -2,6 +2,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
+import BlueAgent.java;
+import RedAgent.java;
+import GreenTeamMember.java;
+import GreyTeamMember.java;
 
 public class Gamestate {
     ArrayList<GreenTeamMember> graph = new ArrayList<GreenTeamMember>();
@@ -18,12 +22,15 @@ public class Gamestate {
             System.out.println("Enter 'g' to generate a graph from input parameters.");
             System.out.println("Enter 'f' to use a graph specified in an input file.");
             input = scanner.nextLine().toLowerCase();
-            if (input.compareTo('g') == 0 || input.compareTo('f') == 0)
+            if (input.compareTo("g") == 0 || input.compareTo("f") == 0)
                 break;
             System.out.println("Invalid input.");
         }
         
-        if (input.compareTo("g")) {
+        if (input.compareTo("g") == 0) {
+            
+        }
+        else {assert(input.compareTo("f") == 0);
             File inputFile;
             while (true) {
                 System.out.println("Enter name of input file: ");
@@ -36,15 +43,15 @@ public class Gamestate {
 
                 }
             }
-            Scanner myReader = new Scanner(inputFile);
-            while (myReader.hasNextLine()) {
-                String data = myReader.nextLine();
-
+            Scanner myFileReader = new Scanner(inputFile);
+            while (myFileReader.hasNextLine()) {
+                String data = myFileReader.nextLine();
+                
             }
-        }
-        else {assert(input.compareTo("f"));
-            
+            myFileReader.close();
         }
         
+
+        scanner.close();
     }
 }
