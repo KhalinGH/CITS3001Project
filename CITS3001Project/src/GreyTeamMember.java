@@ -1,4 +1,3 @@
-package CITS3001Project;
 import java.util.ArrayList;
 
 public class GreyTeamMember {
