@@ -6,9 +6,8 @@ import java.util.Scanner;
 public class App {
     public static void main(String args[]) {
         Scanner scanner = new Scanner(System.in);
-        GameState game = new GameState();
-        
         String input = new String();
+        GameState game;
 
         while (true) {
             System.out.println("Enter 'p' to generate the node attributes from input parameters.");
@@ -40,6 +39,9 @@ public class App {
                 }
             }
             
+            int highest_node_id = -1;
+            ArrayList<Integer> temp0 = new ArrayList<Integer>();
+            ArrayList<String> temp1 = new ArrayList<String>();
             while (myFileReader.hasNextLine()) {
                 String[] data = myFileReader.nextLine().split(",");
                 if (data.length != 2)
@@ -49,12 +51,19 @@ public class App {
                     n = Integer.parseInt(data[0]);
                 }
                 catch (NumberFormatException e) {
-                    continue;  
+                    continue;
                 }
                 String colour = data[1].toLowerCase();
-                game.node_colour.put(n, colour);
-                if (n == 1) System.out.println(n + " " + colour);
+                temp0.add(n);
+                temp1.add(colour);
+                if (n > highest_node_id)
+                    highest_node_id = n;
             }
+
+            game = new GameState(highest_node_id);
+            assert(temp0.size() == temp1.size());
+            for (int i = 0; i < temp0.size(); i++)
+                game.node_colour[temp0.get(i)] = temp1.get(i);
             myFileReader.close();
         }
 
