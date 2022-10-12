@@ -11,16 +11,16 @@ public class App {
         String input = new String();
 
         while (true) {
-            System.out.println("Enter 'g' to generate the node attributes from input parameters.");
+            System.out.println("Enter 'p' to generate the node attributes from input parameters.");
             System.out.println("Enter 'f' to use the node attributes specified in an input file.");
             input = scanner.nextLine().toLowerCase();
             System.out.println();
-            if (input.compareTo("g") == 0 || input.compareTo("f") == 0)
+            if (input.compareTo("p") == 0 || input.compareTo("f") == 0)
                 break;
             System.out.println("Invalid input.");
         }
 
-        if (input.compareTo("g") == 0) {
+        if (input.compareTo("p") == 0) {
             
         }
         else {assert(input.compareTo("f") == 0);
@@ -44,18 +44,16 @@ public class App {
                 String[] data = myFileReader.nextLine().split(",");
                 if (data.length != 2)
                     continue;
-                int n1, n2;
+                int n;
                 try {
-                    n1 = Integer.parseInt(data[0]);
-                    n2 = Integer.parseInt(data[1]);
+                    n = Integer.parseInt(data[0]);
                 }
                 catch (NumberFormatException e) {
                     continue;  
                 }
-                ArrayList<Integer> edge = new ArrayList<Integer>();
-                edge.add(n1);
-                edge.add(n2);
-                game.edges.add(edge);
+                String colour = data[1].toLowerCase();
+                game.node_colour.put(n, colour);
+                if (n == 1) System.out.println(n + " " + colour);
             }
             myFileReader.close();
         }
@@ -63,16 +61,16 @@ public class App {
 
 
         while (true) {
-            System.out.println("Enter 'g' to generate the graph from input parameters.");
+            System.out.println("Enter 'p' to generate the graph from input parameters.");
             System.out.println("Enter 'f' to use the graph specified in an input file.");
             input = scanner.nextLine().toLowerCase();
             System.out.println();
-            if (input.compareTo("g") == 0 || input.compareTo("f") == 0)
+            if (input.compareTo("p") == 0 || input.compareTo("f") == 0)
                 break;
             System.out.println("Invalid input.");
         }
         
-        if (input.compareTo("g") == 0) {
+        if (input.compareTo("p") == 0) {
             
         }
         else {assert(input.compareTo("f") == 0);
@@ -103,6 +101,22 @@ public class App {
                 }
                 catch (NumberFormatException e) {
                     continue;  
+                }
+                if (!game.node_colour.containsKey(n1)) {
+                    System.out.println("Node " + n1 + " specified in file does not exist.");
+                    System.exit(-1);
+                }
+                if (!game.node_colour.containsKey(n2)) {
+                    System.out.println("Node " + n2 + " specified in file does not exist.");
+                    System.exit(-1);
+                }
+                if (game.node_colour.get(n1) != "green") {
+                    System.out.println("Node " + n1 + " specified in file is not a member of the green team.");
+                    System.exit(-1);
+                }
+                if (game.node_colour.get(n2) != "green") {
+                    System.out.println("Node " + n2 + " specified in file is not a member of the green team.");
+                    System.exit(-1);
                 }
                 ArrayList<Integer> edge = new ArrayList<Integer>();
                 edge.add(n1);
