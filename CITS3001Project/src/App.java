@@ -19,8 +19,11 @@ public class App {
             System.out.println("Invalid input.");
         }
 
+        int highest_node_id = -1;
         if (input.compareTo("p") == 0) {
-            
+            // TODO
+            game = new GameState(highest_node_id);
+            // TODO
         }
         else {assert(input.compareTo("f") == 0);
             File inputFile;
@@ -39,7 +42,6 @@ public class App {
                 }
             }
             
-            int highest_node_id = -1;
             ArrayList<Integer> temp0 = new ArrayList<Integer>();
             ArrayList<String> temp1 = new ArrayList<String>();
             while (myFileReader.hasNextLine()) {
@@ -80,7 +82,7 @@ public class App {
         }
         
         if (input.compareTo("p") == 0) {
-            
+            // TODO
         }
         else {assert(input.compareTo("f") == 0);
             File inputFile;
@@ -111,19 +113,19 @@ public class App {
                 catch (NumberFormatException e) {
                     continue;  
                 }
-                if (!game.node_colour.containsKey(n1)) {
+                if (n1 > highest_node_id) {
                     System.out.println("Node " + n1 + " specified in file does not exist.");
                     System.exit(-1);
                 }
-                if (!game.node_colour.containsKey(n2)) {
+                if (n2 > highest_node_id) {
                     System.out.println("Node " + n2 + " specified in file does not exist.");
                     System.exit(-1);
                 }
-                if (game.node_colour.get(n1) != "green") {
+                if (game.node_colour[n1] != "green") {
                     System.out.println("Node " + n1 + " specified in file is not a member of the green team.");
                     System.exit(-1);
                 }
-                if (game.node_colour.get(n2) != "green") {
+                if (game.node_colour[n2] != "green") {
                     System.out.println("Node " + n2 + " specified in file is not a member of the green team.");
                     System.exit(-1);
                 }
