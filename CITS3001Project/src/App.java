@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.Collections;
 
 public class App {
     public static void main(String args[]) {
@@ -9,9 +10,37 @@ public class App {
         String input = new String();
         GameState game;
 
+        double minimum_uncertainty, maximum_uncertainty;
         while (true) {
-            System.out.println("Enter 'p' to generate the node attributes from input parameters.");
-            System.out.println("Enter 'f' to use the node attributes specified in an input file.");
+            System.out.println("Enter the minimum initial uncertainty of each green team member (give a value from -1 to 1)");
+            input = scanner.nextLine();
+            System.out.println();
+            try {
+                minimum_uncertainty = Double.parseDouble(input);
+                break;
+            }
+            catch (NumberFormatException e) {
+                System.out.println("Invalid input.");
+            }
+        }
+        while (true) {
+            System.out.println("Enter the maximum initial uncertainty of each green team member (give a value from -1 to 1)");
+            input = scanner.nextLine();
+            System.out.println();
+            try {
+                maximum_uncertainty = Double.parseDouble(input);
+                break;
+            }
+            catch (NumberFormatException e) {
+                System.out.println("Invalid input.");
+            }
+        }
+
+
+        // Get node ids and teams
+        while (true) {
+            System.out.println("Enter 'p' to generate the node ids and teams from input parameters.");
+            System.out.println("Enter 'f' to use the node ids and teams specified in an input file.");
             input = scanner.nextLine().toLowerCase();
             System.out.println();
             if (input.compareTo("p") == 0 || input.compareTo("f") == 0)
@@ -19,17 +48,59 @@ public class App {
             System.out.println("Invalid input.");
         }
 
-        int highest_node_id = -1;
+        // Use parameters to get node ids and teams (must set game.nodes, game.ids_that_have_a_node, game.num_grey_good, game.num_grey_bad)
         if (input.compareTo("p") == 0) {
-            // TODO
-            game = new GameState(highest_node_id);
-            // TODO
+            int num_green_agents;
+            while (true) {
+                System.out.println("Enter the number of green team members.");
+                input = scanner.nextLine();
+                System.out.println();
+                try {
+                    num_green_agents = Integer.parseInt(input);
+                    break;
+                }
+                catch (NumberFormatException e) {
+                    System.out.println("Invalid input.");
+                }
+            }
+            game = new GameState(num_green_agents);
+            for (int i = 1; i <= num_green_agents; i++) {
+                game.nodes[i] = new GreenTeamMember(minimum_uncertainty, maximum_uncertainty);
+                game.ids_that_have_a_node.add(i);
+            }
+
+            while (true) {
+                System.out.println("Enter the number of good grey agents.");
+                input = scanner.nextLine();
+                System.out.println();
+                try {
+                    game.num_grey_good = Integer.parseInt(input);
+                    break;
+                }
+                catch (NumberFormatException e) {
+                    System.out.println("Invalid input.");
+                }
+            }
+            while (true) {
+                System.out.println("Enter the number of bad grey agents (i.e. spies).");
+                input = scanner.nextLine();
+                System.out.println();
+                try {
+                    game.num_grey_bad = Integer.parseInt(input);
+                    break;
+                }
+                catch (NumberFormatException e) {
+                    System.out.println("Invalid input.");
+                }
+            }
+            
         }
+        // Use input file to get node ids and teams (must set game.nodes, game.ids_that_have_a_node, game.num_grey_good, game.num_grey_bad)
         else {assert(input.compareTo("f") == 0);
             File inputFile;
             Scanner myFileReader;
             while (true) {
-                System.out.println("Enter name of input file specifying node attributes.\nFile format:\nid,team\nid,team\nid,team\n...");
+                System.out.println("Enter the name of the input file specifying the node ids and teams.\nFile format:\nid,team\nid,team\nid,team\n...");
                 input = scanner.nextLine();
                 System.out.println();
                 inputFile = new File(input);
@@ -42,8 +113,9 @@ public class App {
                 }
             }
             
-            ArrayList<Integer> temp0 = new ArrayList<Integer>();
-            ArrayList<String> temp1 = new ArrayList<String>();
+            int highest_node_id = -1;
+            ArrayList<Integer> temp_ids = new ArrayList<Integer>();
+            ArrayList<String> temp_colours = new ArrayList<String>();
             while (myFileReader.hasNextLine()) {
                 String[] data = myFileReader.nextLine().split(",");
                 if (data.length != 2)
@@ -56,21 +128,35 @@ public class App {
                     continue;
                 }
                 String colour = data[1].toLowerCase();
-                temp0.add(n);
-                temp1.add(colour);
+                temp_ids.add(n);
+                temp_colours.add(colour);
                 if (n > highest_node_id)
                     highest_node_id = n;
             }
 
             game = new GameState(highest_node_id);
-            assert(temp0.size() == temp1.size());
-            for (int i = 0; i < temp0.size(); i++)
-                game.node_colour[temp0.get(i)] = temp1.get(i);
+            assert(temp_ids.size() == temp_colours.size());
+            for (int i = 0; i < temp_ids.size(); i++) {
+                int n = temp_ids.get(i);
+                String colour = temp_colours.get(i);
+                if (colour == "green") {
+                    game.nodes[n] = new GreenTeamMember(minimum_uncertainty, maximum_uncertainty);
+                    game.ids_that_have_a_node.add(n);
+                }
+                else if (colour == "grey-good")
+                    game.num_grey_good++;
+                else if (colour == "grey-bad")
+                    game.num_grey_bad++;
+                else if (colour != "red" && colour != "blue") {
+                    System.out.println("Team '" + colour + "' not recognised");
+                    System.exit(-1);
+                }
+            }
             myFileReader.close();
         }
 
 
-
+        // Get graph
         while (true) {
             System.out.println("Enter 'p' to generate the graph from input parameters.");
             System.out.println("Enter 'f' to use the graph specified in an input file.");
@@ -81,14 +167,54 @@ public class App {
             System.out.println("Invalid input.");
         }
         
+        // Use parameters to get graph (must set game.edges)
         if (input.compareTo("p") == 0) {
-            // TODO
+            double prob_edge;
+            while (true) {
+                System.out.println("Enter the proportion of possible edges that should be a real edge (from 0 to 1)."); // TODO: Reword
+                input = scanner.nextLine();
+                System.out.println();
+                try {
+                    prob_edge = Double.parseDouble(input);
+                    if (0 <= prob_edge && prob_edge <= 1)
+                        break;
+                    System.out.println("Invalid input.");
+                }
+                catch (NumberFormatException e) {
+                    System.out.println("Invalid input.");
+                }
+            }
+
+            int num_nodes = game.ids_that_have_a_node.size();
+            ArrayList<ArrayList<Integer>> possible_edges = new ArrayList<ArrayList<Integer>>();
+            for (int i = 0; i < game.ids_that_have_a_node.size(); i++)
+                for (int j = i + 1; j < game.ids_that_have_a_node.size(); j++) {
+                    ArrayList<Integer> edge = new ArrayList<Integer>();
+                    edge.add(i);
+                    edge.add(j);
+                    possible_edges.add(edge);
+                }
+            assert(possible_edges.size() == num_nodes * (num_nodes - 1) / 2);
+            int num_edges = (int)Math.round(prob_edge * possible_edges.size());
+
+            Collections.shuffle(possible_edges);
+            for (int i = 0; i < num_edges; i++) {
+                ArrayList<Integer> chosen_possible_edge = possible_edges.get(i);
+                int n1 = chosen_possible_edge.get(0);
+                int n2 = chosen_possible_edge.get(1);
+
+                ArrayList<GreenTeamMember> edge = new ArrayList<GreenTeamMember>();
+                edge.add(game.nodes[n1]);
+                edge.add(game.nodes[n2]);
+                game.edges.add(edge);
+            }
         }
+        // Use input file to get graph (must set game.edges)
         else {assert(input.compareTo("f") == 0);
             File inputFile;
             Scanner myFileReader;
             while (true) {
-                System.out.println("Enter name of input file specifying graph.\nFile format:\nn1,n2\nn1,n2\nn1,n2\n...");
+                System.out.println("Enter the name of the input file specifying the graph.\nFile format:\nn1,n2\nn1,n2\nn1,n2\n...");
                 input = scanner.nextLine();
                 System.out.println();
                 inputFile = new File(input);
@@ -113,25 +239,25 @@ public class App {
                 catch (NumberFormatException e) {
                     continue;  
                 }
-                if (n1 > highest_node_id) {
+                if (n1 >= game.nodes.length) {
                     System.out.println("Node " + n1 + " specified in file does not exist.");
                     System.exit(-1);
                 }
-                if (n2 > highest_node_id) {
+                if (n2 >= game.nodes.length) {
                     System.out.println("Node " + n2 + " specified in file does not exist.");
                     System.exit(-1);
                 }
-                if (game.node_colour[n1] != "green") {
+                if (game.nodes[n1] == null) {
                     System.out.println("Node " + n1 + " specified in file is not a member of the green team.");
                     System.exit(-1);
                 }
-                if (game.node_colour[n2] != "green") {
+                if (game.nodes[n2] == null) {
                     System.out.println("Node " + n2 + " specified in file is not a member of the green team.");
                     System.exit(-1);
                 }
-                ArrayList<Integer> edge = new ArrayList<Integer>();
-                edge.add(n1);
-                edge.add(n2);
+                ArrayList<GreenTeamMember> edge = new ArrayList<GreenTeamMember>();
+                edge.add(game.nodes[n1]);
+                edge.add(game.nodes[n2]);
                 game.edges.add(edge);
             }
             myFileReader.close();
