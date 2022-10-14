@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class GameState {
     Node[] nodes;
@@ -20,8 +21,28 @@ public class GameState {
         edges = new ArrayList<ArrayList<Node>>();
         game_over = false;
     }
+    
+    public void printStats() {
+        int goodCount = 0, badCount = 0;
+        double totalGoodUncertainty = 0, totalBadUncertainty = 0;
+        for (int id : ids_that_have_a_node) {
+            Node n = nodes[id];
+            if (n.opinion) {
+                goodCount++;
+                totalGoodUncertainty += n.uncertainty;
+            }
+            else {
+                badCount++;
+                totalBadUncertainty += n.uncertainty;
+            }
+        }
+        System.out.println(goodCount + " members of the green team DO want to vote (their average uncertainty is " + totalGoodUncertainty / goodCount);
+        System.out.println(badCount + " members of the green team DO NOT want to vote (their average uncertainty is " + totalBadUncertainty / badCount);
+    }
 
     public void simulateGreenInteractions() {
-        // TODO
+        for (ArrayList<Node> edge : edges) {
+            Node.interact(edge.get(0), edge.get(1));
+        }
     }
 }

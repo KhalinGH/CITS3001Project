@@ -22,6 +22,7 @@ public class RedAgent {
 
     public int makeHumanMove(GameState game) {
         game.display();
+        game.printStats();
 
         // TODO
         return 0;
