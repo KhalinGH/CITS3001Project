@@ -39,8 +39,8 @@ public class GameState {
                 totalBadUncertainty += n.uncertainty;
             }
         }
-        System.out.println(goodCount + " members of the green team DO want to vote (their average uncertainty is " + totalGoodUncertainty / goodCount);
-        System.out.println(badCount + " members of the green team DO NOT want to vote (their average uncertainty is " + totalBadUncertainty / badCount);
+        System.out.println(goodCount + " members of the green team DO want to vote (their average uncertainty is " + totalGoodUncertainty / goodCount + ")");
+        System.out.println(badCount + " members of the green team DO NOT want to vote (their average uncertainty is " + totalBadUncertainty / badCount + ")");
     }
 
     public void simulateGreenInteractions() {
