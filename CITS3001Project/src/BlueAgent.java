@@ -15,10 +15,12 @@ public class BlueAgent {
         game.display();
 
         // TODO
+        return 0;
     }
 
     public int makeAIMove(GameState game) {
         // TODO: Learning strategy
+        return 0;
     }
 
 

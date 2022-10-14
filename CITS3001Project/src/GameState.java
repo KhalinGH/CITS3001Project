@@ -6,6 +6,7 @@ public class GameState {
     int num_grey_good;
     int num_grey_bad;
     ArrayList<ArrayList<GreenTeamMember>> edges;
+    boolean game_over;
 
     public void make_graph() {
         
@@ -21,5 +22,6 @@ public class GameState {
         num_grey_good = 0;
         num_grey_bad = 0;
         edges = new ArrayList<ArrayList<GreenTeamMember>>();
+        game_over = false;
     }
 }

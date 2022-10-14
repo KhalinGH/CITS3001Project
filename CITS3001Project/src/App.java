@@ -15,11 +15,34 @@ public class App {
         
         GameState game = get_node_ids_and_teams(scanner, minimum_uncertainty, maximum_uncertainty);
         getGraph(scanner, game);
+        
+        ArrayList<Boolean> players = getPlayers(scanner);
+        boolean bluePlayerIsHuman = players.get(0);
+        boolean redPlayerIsHuman = players.get(1);
+
+
+        RedAgent redPlayer = new RedAgent();
+        BlueAgent bluePlayer = new BlueAgent();
+
+        while (!game.game_over) {
+            if (redPlayerIsHuman)
+                redPlayer.makeHumanMove(game);
+            else
+                redPlayer.makeAIMove(game);
+
+            if (bluePlayerIsHuman)
+                bluePlayer.makeHumanMove(game);
+            else
+                bluePlayer.makeAIMove(game);
+        }
+
+        scanner.close();
     }
 
     public static ArrayList<Double> get_min_and_max_uncertainties(Scanner scanner) {
-        double minimum_uncertainty, maximum_uncertainty;
         String input = new String();
+        double minimum_uncertainty, maximum_uncertainty;
+
         while (true) {
             System.out.println("Enter the minimum initial uncertainty of each green team member (give a value from -1 to 1)");
             input = scanner.nextLine();
@@ -44,7 +67,6 @@ public class App {
                 System.out.println("Invalid input.");
             }
         }
-        scanner.close();
         return new ArrayList<Double>(Arrays.asList(minimum_uncertainty, maximum_uncertainty));
     }
 
@@ -169,7 +191,6 @@ public class App {
             }
             myFileReader.close();
         }
-        scanner.close();
         return game;
     }
 
@@ -282,6 +303,37 @@ public class App {
             }
             myFileReader.close();
         }
-        scanner.close();
+    }
+
+    public static ArrayList<Boolean> getPlayers(Scanner scanner) {
+        String inputBlue = new String();
+        String inputRed = new String();
+
+        // Get players
+        while (true) {
+            System.out.println("Enter 'h' to make the blue player a human.");
+            System.out.println("Enter 'a' to make the blue player an AI.");
+            inputBlue = scanner.nextLine().toLowerCase();
+            System.out.println();
+            if (inputBlue.compareTo("h") == 0 || inputBlue.compareTo("a") == 0)
+                break;
+            System.out.println("Invalid input.");
+        }
+
+        // Get players
+        while (true) {
+            System.out.println("Enter 'h' to make the red player a human.");
+            System.out.println("Enter 'a' to make the red player an AI.");
+            inputRed = scanner.nextLine().toLowerCase();
+            System.out.println();
+            if (inputRed.compareTo("h") == 0 || inputRed.compareTo("a") == 0)
+                break;
+            System.out.println("Invalid input.");
+        }
+        
+        ArrayList<Boolean> players = new ArrayList<Boolean>();
+        players.add(inputBlue.compareTo("h") == 0);
+        players.add(inputRed.compareTo("h") == 0);
+        return players;
     }
 }
