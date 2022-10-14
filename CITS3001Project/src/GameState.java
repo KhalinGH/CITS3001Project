@@ -11,6 +11,10 @@ public class GameState {
         
     }
 
+    public void display() {
+        // TODO
+    }
+
     public GameState(int highest_node_id) {
         nodes = new GreenTeamMember[highest_node_id + 1];
         ids_that_have_a_node = new ArrayList<Integer>();
