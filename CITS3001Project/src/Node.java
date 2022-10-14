@@ -19,13 +19,23 @@ public class Node {
         this.uncertainty = 0;
         this.opinion = isGood;
     }
-    
-    public static void interact(Node a, Node b) {
+
+    public static void changeParametersOfB(Node a, Node b) {
+        // TODO: Change b.opinion and/or b.uncertainty based on a.opinion and/or a.uncertainty
+    }
+
+    public static void interact_one_way(Node a, Node b) {
         if (a.uncertainty < b.uncertainty) {
-            // TODO: Alter b's uncertainty and opinion
+            changeParametersOfB(a, b);
         }
-        else {
-            // TODO: Alter a's uncertainty and opinion
+    }
+    
+    public static void interact_two_way(Node a, Node b) {
+        if (a.uncertainty < b.uncertainty) {
+            changeParametersOfB(a, b);
+        }
+        else if (b.uncertainty < a.uncertainty) {
+            changeParametersOfB(b, a);
         }
     }
 }

@@ -9,7 +9,7 @@ public class RedAgent {
     static ArrayList<Double> proportionFollowersLostForEachPotency = new ArrayList<Double>(Arrays.asList(-1.0, 0.03, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24, 0.27, 0.30));
 
     public RedAgent() {
-       greenFollowers = new ArrayList<Node>();
+        greenFollowers = new ArrayList<Node>();
     }
     
     public void loseFollowers(int message_potency) {
@@ -26,7 +26,7 @@ public class RedAgent {
         loseFollowers(message_potency);
         Node redNode = new Node(uncertaintyForEachPotency.get(message_potency), false);
         for (int id : game.ids_that_have_a_node)
-            Node.interact(redNode, game.nodes[id]);
+            Node.interact_one_way(redNode, game.nodes[id]);
     }
 
     public void makeHumanMove(GameState game, Scanner scanner) {
@@ -40,7 +40,7 @@ public class RedAgent {
         while (true) {
             System.out.println("You, the red agent, have " + greenFollowers.size() + " followers remaining.");
             System.out.println("The blue agent has " + game.bluePlayer.energy + " energy remaining.");
-            System.out.println("Enter your choice of message potency from 1 to " + num_potencies);
+            System.out.println("Enter your choice of message potency from 1 to " + num_potencies + ".");
             System.out.print("Potency:                     \t");
             for (int i = 1; i <= num_potencies; i++)
                 System.out.print(i + "\t");

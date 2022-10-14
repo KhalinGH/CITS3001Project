@@ -13,8 +13,13 @@ public class App {
         double minimum_uncertainty = uncertainties.get(0);
         double maximum_uncertainty = uncertainties.get(1);
         
+        // Set up the game
         GameState game = get_node_ids_and_teams(scanner, minimum_uncertainty, maximum_uncertainty);
         getGraph(scanner, game);
+        for (int id : game.ids_that_have_a_node) {
+            Node n = game.nodes[id];
+            game.redPlayer.greenFollowers.add(n);
+        }
         
         ArrayList<Boolean> players = getPlayers(scanner);
         boolean bluePlayerIsHuman = players.get(0);

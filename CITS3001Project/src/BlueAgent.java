@@ -20,14 +20,14 @@ public class BlueAgent {
         boolean is_good = Math.random() < proportionOfGreysThatAreGood;
         Node greyNode = new Node(is_good);
         for (int id : game.ids_that_have_a_node)
-            Node.interact(greyNode, game.nodes[id]);
+            Node.interact_one_way(greyNode, game.nodes[id]);
     }
 
     public void doMove(GameState game, int message_potency) { // A message_potency of -1 indicates that a grey agent is being released
         loseEnergy(message_potency);
         Node blueNode = new Node(uncertaintyForEachPotency.get(message_potency), true);
         for (int id : game.ids_that_have_a_node)
-            Node.interact(blueNode, game.nodes[id]);
+            Node.interact_one_way(blueNode, game.nodes[id]);
     }
 
     public void makeHumanMove(GameState game, Scanner scanner) {
@@ -41,7 +41,7 @@ public class BlueAgent {
         while (true) {
             System.out.println("You, the blue agent, have " + energy + " energy remaining.");
             System.out.println("The red agent has " + game.redPlayer.greenFollowers.size() + " followers remaining.");
-            System.out.println("Enter your choice of message potency from 1 to " + num_potencies);
+            System.out.println("Enter your choice of message potency from 1 to " + num_potencies + ".");
             System.out.print("Potency:                     \t");
             for (int i = 1; i <= num_potencies; i++)
                 System.out.print(i + "\t");
@@ -58,7 +58,7 @@ public class BlueAgent {
             System.out.println();
             try {
                 message_potency = Integer.parseInt(input);
-                if (energyLostForEachPotency.get(message_potency) >= energy)
+                if (energy >= energyLostForEachPotency.get(message_potency))
                     break;
                 System.out.println("You do not have enough energy to send that message.");
             }

@@ -39,13 +39,13 @@ public class GameState {
                 totalBadUncertainty += n.uncertainty;
             }
         }
-        System.out.println(goodCount + " members of the green team DO want to vote (their average uncertainty is " + totalGoodUncertainty / goodCount + ")");
-        System.out.println(badCount + " members of the green team DO NOT want to vote (their average uncertainty is " + totalBadUncertainty / badCount + ")");
+        System.out.printf("%d member" + (goodCount == 1 ? "" : "s") + " of the green team DO want to vote (their average uncertainty is %.3f).\n", goodCount, totalGoodUncertainty / goodCount);
+        System.out.printf("%d member" + (badCount == 1 ? "" : "s") + " of the green team DO NOT want to vote (their average uncertainty is %.3f).\n", badCount, totalBadUncertainty / badCount);
     }
 
     public void simulateGreenInteractions() {
         for (ArrayList<Node> edge : edges) {
-            Node.interact(edge.get(0), edge.get(1));
+            Node.interact_two_way(edge.get(0), edge.get(1));
         }
     }
 }
