@@ -16,25 +16,22 @@ public class App {
         // Set up the game
         GameState game = get_node_ids_and_teams(scanner, minimum_uncertainty, maximum_uncertainty);
         getGraph(scanner, game);
-        for (int id : game.ids_that_have_a_node) {
-            Node n = game.nodes[id];
-            game.redPlayer.greenFollowers.add(n);
-        }
+        giveRedFollowers(game);
         
         ArrayList<Boolean> players = getPlayers(scanner);
         boolean bluePlayerIsHuman = players.get(0);
         boolean redPlayerIsHuman = players.get(1);
 
         while (!game.game_over) {
-            if (redPlayerIsHuman)
-                game.redPlayer.makeHumanMove(game, scanner);
-            else
-                game.redPlayer.makeAIMove(game);
-
             if (bluePlayerIsHuman)
                 game.bluePlayer.makeHumanMove(game, scanner);
             else
                 game.bluePlayer.makeAIMove(game);
+            
+            if (redPlayerIsHuman)
+                game.redPlayer.makeHumanMove(game, scanner);
+            else
+                game.redPlayer.makeAIMove(game);
             
             game.simulateGreenInteractions();
         }
@@ -52,7 +49,9 @@ public class App {
             System.out.println();
             try {
                 minimum_uncertainty = Double.parseDouble(input);
-                break;
+                if (-1 <= minimum_uncertainty && minimum_uncertainty <= 1)
+                    break;
+                System.out.println("Invalid input.");
             }
             catch (NumberFormatException e) {
                 System.out.println("Invalid input.");
@@ -64,7 +63,9 @@ public class App {
             System.out.println();
             try {
                 maximum_uncertainty = Double.parseDouble(input);
-                break;
+                if (-1 <= maximum_uncertainty && maximum_uncertainty <= 1)
+                    break;
+                System.out.println("Invalid input.");
             }
             catch (NumberFormatException e) {
                 System.out.println("Invalid input.");
@@ -97,7 +98,9 @@ public class App {
                 System.out.println();
                 try {
                     num_green_agents = Integer.parseInt(input);
-                    break;
+                    if (num_green_agents >= 0)
+                        break;
+                    System.out.println("Invalid input.");
                 }
                 catch (NumberFormatException e) {
                     System.out.println("Invalid input.");
@@ -215,7 +218,7 @@ public class App {
         if (input.compareTo("p") == 0) {
             double prob_edge;
             while (true) {
-                System.out.println("Enter the proportion of possible edges that should be a real edge (from 0 to 1)."); // TODO: Reword
+                System.out.println("Enter the proportion of possible edges that should be a real edge (from 0 to 1)."); // TODO: Reword this
                 input = scanner.nextLine();
                 System.out.println();
                 try {
@@ -233,9 +236,11 @@ public class App {
             ArrayList<ArrayList<Integer>> possible_edges = new ArrayList<ArrayList<Integer>>();
             for (int i = 0; i < game.ids_that_have_a_node.size(); i++)
                 for (int j = i + 1; j < game.ids_that_have_a_node.size(); j++) {
+                    int id1 = game.ids_that_have_a_node.get(i);
+                    int id2 = game.ids_that_have_a_node.get(j);
                     ArrayList<Integer> edge = new ArrayList<Integer>();
-                    edge.add(i);
-                    edge.add(j);
+                    edge.add(id1);
+                    edge.add(id2);
                     possible_edges.add(edge);
                 }
             assert(possible_edges.size() == num_nodes * (num_nodes - 1) / 2);
@@ -305,6 +310,14 @@ public class App {
                 game.edges.add(edge);
             }
             myFileReader.close();
+        }
+    }
+
+    public static void giveRedFollowers(GameState game) {
+        // Give red followers (must set game.redPlayer.greenFollowers)
+        for (int id : game.ids_that_have_a_node) {
+            Node n = game.nodes[id];
+            game.redPlayer.greenFollowers.add(n);
         }
     }
 

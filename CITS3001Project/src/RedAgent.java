@@ -15,7 +15,7 @@ public class RedAgent {
     public void loseFollowers(int message_potency) {
         double proportionLost = proportionFollowersLostForEachPotency.get(message_potency);
         int numFollowersLost = (int)Math.round(proportionLost * greenFollowers.size());
-        if (numFollowersLost == 0) // TODO: Is this a good system?
+        if (numFollowersLost == 0 && greenFollowers.size() != 0) // TODO: Is this a good system?
             numFollowersLost = 1;
         Collections.shuffle(greenFollowers);
         for (int i = 0; i < numFollowersLost; i++)
@@ -32,14 +32,18 @@ public class RedAgent {
     public void makeHumanMove(GameState game, Scanner scanner) {
         System.out.println("*** Red agent's turn ***");
         game.display();
-        game.printStats();
 
         String input = new String();
         int num_potencies = uncertaintyForEachPotency.size() - 1;
         int message_potency;
         while (true) {
+            game.printStats();
             System.out.println("You, the red agent, have " + greenFollowers.size() + " followers remaining.");
             System.out.println("The blue agent has " + game.bluePlayer.energy + " energy remaining.");
+            if (game.num_grey_good + game.num_grey_bad == 1)
+                System.out.println("There is " + (game.num_grey_good + game.num_grey_bad) + " grey agent remaining.");
+            else
+                System.out.println("There are " + (game.num_grey_good + game.num_grey_bad) + " grey agents remaining.");
             System.out.println("Enter your choice of message potency from 1 to " + num_potencies + ".");
             System.out.print("Potency:                     \t");
             for (int i = 1; i <= num_potencies; i++)
@@ -57,7 +61,9 @@ public class RedAgent {
             System.out.println();
             try {
                 message_potency = Integer.parseInt(input);
-                break;
+                if (1 <= message_potency && message_potency <= num_potencies)
+                    break;
+                System.out.println("Invalid input.");
             }
             catch (NumberFormatException e) {
                 System.out.println("Invalid input.");
