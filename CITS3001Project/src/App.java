@@ -20,7 +20,6 @@ public class App {
         boolean bluePlayerIsHuman = players.get(0);
         boolean redPlayerIsHuman = players.get(1);
 
-
         RedAgent redPlayer = new RedAgent();
         BlueAgent bluePlayer = new BlueAgent();
 

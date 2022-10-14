@@ -6,5 +6,7 @@ public class GreenTeamMember {
         // TODO
     }
 
-
+    public GreenTeamMember(double uncertainty) {
+        this.uncertainty = uncertainty;
+    }
 }
