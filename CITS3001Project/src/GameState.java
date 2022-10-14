@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class GameState {
     Node[] nodes;
@@ -8,6 +7,8 @@ public class GameState {
     int num_grey_bad;
     ArrayList<ArrayList<Node>> edges;
     boolean game_over;
+    RedAgent redPlayer;
+    BlueAgent bluePlayer;
 
     public void display() {
         // TODO
@@ -20,6 +21,8 @@ public class GameState {
         num_grey_bad = 0;
         edges = new ArrayList<ArrayList<Node>>();
         game_over = false;
+        redPlayer = new RedAgent();
+        bluePlayer = new BlueAgent();
     }
     
     public void printStats() {

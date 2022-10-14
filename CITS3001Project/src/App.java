@@ -20,19 +20,16 @@ public class App {
         boolean bluePlayerIsHuman = players.get(0);
         boolean redPlayerIsHuman = players.get(1);
 
-        RedAgent redPlayer = new RedAgent();
-        BlueAgent bluePlayer = new BlueAgent();
-
         while (!game.game_over) {
             if (redPlayerIsHuman)
-                redPlayer.makeHumanMove(game);
+                game.redPlayer.makeHumanMove(game, scanner);
             else
-                redPlayer.makeAIMove(game);
+                game.redPlayer.makeAIMove(game);
 
             if (bluePlayerIsHuman)
-                bluePlayer.makeHumanMove(game);
+                game.bluePlayer.makeHumanMove(game, scanner);
             else
-                bluePlayer.makeAIMove(game);
+                game.bluePlayer.makeAIMove(game);
             
             game.simulateGreenInteractions();
         }
