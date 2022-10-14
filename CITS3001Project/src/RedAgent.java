@@ -20,13 +20,6 @@ public class RedAgent {
             greenFollowers.remove(greenFollowers.size() - 1);
     }
 
-    public void releaseGreyAgent(GameState game) {
-        double proportionOfGreysThatAreGood = (double)game.num_grey_good / (game.num_grey_good + game.num_grey_bad);
-        boolean is_good = Math.random() < proportionOfGreysThatAreGood;
-        Node greyNode = new Node(is_good);
-        
-    }
-
     public int makeHumanMove(GameState game) {
         game.display();
 

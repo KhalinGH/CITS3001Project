@@ -33,6 +33,8 @@ public class App {
                 bluePlayer.makeHumanMove(game);
             else
                 bluePlayer.makeAIMove(game);
+            
+            game.simulateGreenInteractions();
         }
 
         scanner.close();
@@ -101,7 +103,7 @@ public class App {
             }
             game = new GameState(num_green_agents);
             for (int i = 1; i <= num_green_agents; i++) {
-                game.nodes[i] = new GreenTeamMember(minimum_uncertainty, maximum_uncertainty);
+                game.nodes[i] = new Node(minimum_uncertainty, maximum_uncertainty);
                 game.ids_that_have_a_node.add(i);
             }
 
@@ -176,7 +178,7 @@ public class App {
                 int n = temp_ids.get(i);
                 String colour = temp_colours.get(i);
                 if (colour == "green") {
-                    game.nodes[n] = new GreenTeamMember(minimum_uncertainty, maximum_uncertainty);
+                    game.nodes[n] = new Node(minimum_uncertainty, maximum_uncertainty);
                     game.ids_that_have_a_node.add(n);
                 }
                 else if (colour == "grey-good")
@@ -243,7 +245,7 @@ public class App {
                 int n1 = chosen_possible_edge.get(0);
                 int n2 = chosen_possible_edge.get(1);
 
-                ArrayList<GreenTeamMember> edge = new ArrayList<GreenTeamMember>();
+                ArrayList<Node> edge = new ArrayList<Node>();
                 edge.add(game.nodes[n1]);
                 edge.add(game.nodes[n2]);
                 game.edges.add(edge);
@@ -295,7 +297,7 @@ public class App {
                     System.out.println("Node " + n2 + " specified in file is not a member of the green team.");
                     System.exit(-1);
                 }
-                ArrayList<GreenTeamMember> edge = new ArrayList<GreenTeamMember>();
+                ArrayList<Node> edge = new ArrayList<Node>();
                 edge.add(game.nodes[n1]);
                 edge.add(game.nodes[n2]);
                 game.edges.add(edge);

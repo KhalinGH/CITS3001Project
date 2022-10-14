@@ -13,6 +13,14 @@ public class BlueAgent {
         energy -= energyLostFromMessages.get(message_potency);
     }
 
+    public void releaseGreyAgent(GameState game) {
+        double proportionOfGreysThatAreGood = (double)game.num_grey_good / (game.num_grey_good + game.num_grey_bad);
+        boolean is_good = Math.random() < proportionOfGreysThatAreGood;
+        Node greyNode = new Node(is_good);
+        for (int id : game.ids_that_have_a_node)
+            Node.interact(greyNode, game.nodes[id]);
+    }
+
     public int makeHumanMove(GameState game) {
         game.display();
 
