@@ -1,16 +1,25 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Scanner;
 
 public class App {
     public static void main(String args[]) {
         Scanner scanner = new Scanner(System.in);
-        String input = new String();
-        GameState game;
 
+        ArrayList<Double> uncertainties = get_min_and_max_uncertainties(scanner);
+        double minimum_uncertainty = uncertainties.get(0);
+        double maximum_uncertainty = uncertainties.get(1);
+        
+        GameState game = get_node_ids_and_teams(scanner, minimum_uncertainty, maximum_uncertainty);
+        getGraph(scanner, game);
+    }
+
+    public static ArrayList<Double> get_min_and_max_uncertainties(Scanner scanner) {
         double minimum_uncertainty, maximum_uncertainty;
+        String input = new String();
         while (true) {
             System.out.println("Enter the minimum initial uncertainty of each green team member (give a value from -1 to 1)");
             input = scanner.nextLine();
@@ -35,7 +44,13 @@ public class App {
                 System.out.println("Invalid input.");
             }
         }
+        scanner.close();
+        return new ArrayList<Double>(Arrays.asList(minimum_uncertainty, maximum_uncertainty));
+    }
 
+    public static GameState get_node_ids_and_teams(Scanner scanner, double minimum_uncertainty, double maximum_uncertainty) {
+        String input = new String();
+        GameState game;
 
         // Get node ids and teams
         while (true) {
@@ -154,7 +169,12 @@ public class App {
             }
             myFileReader.close();
         }
+        scanner.close();
+        return game;
+    }
 
+    public static void getGraph(Scanner scanner, GameState game) {
+        String input = new String();
 
         // Get graph
         while (true) {
@@ -262,9 +282,6 @@ public class App {
             }
             myFileReader.close();
         }
-        
-        
-
         scanner.close();
     }
 }

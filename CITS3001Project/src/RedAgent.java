@@ -9,11 +9,15 @@ public class RedAgent {
        greenFollowers = new ArrayList<String>();
     }
 
-    public int makeMove(GameState game) {
-        // TODO: Learning strategy
-        game.display()
+    public int makeHumanMove(GameState game) {
+        game.display();
 
+        // TODO
         return 0;
+    }
+
+    public int makeAIMove(GameState game) {
+        // TODO: Learning strategy
     }
 
 
