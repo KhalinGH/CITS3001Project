@@ -1,18 +1,36 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.graph.Graph;
+
 public class GameState {
     Node[] nodes;
     ArrayList<Integer> ids_that_have_a_node;
     int num_grey_good;
     int num_grey_bad;
-    ArrayList<ArrayList<Node>> edges;
+    ArrayList<ArrayList<Integer>> edges;
     boolean game_over;
     RedAgent redPlayer;
     BlueAgent bluePlayer;
-
+    
     public void display() {
-        // TODO
+        System.setProperty("org.graphstream.ui", "swing");
+        Graph graph = new SingleGraph("Tutorial 1");
+        int graphstreamId = 0;
+        for (int id : ids_that_have_a_node) {
+            graph.addNode(Integer.toString(id));
+            org.graphstream.graph.Node n = graph.getNode(graphstreamId++);
+            if (nodes[id].opinion)
+                n.setAttribute("ui.style", "fill-color: blue;");
+            else
+                n.setAttribute("ui.style", "fill-color: red;");
+        }
+        for (int i=0; i<edges.size(); i++) {
+            ArrayList<Integer> edge = edges.get(i);
+            graph.addEdge(Integer.toString(i), Integer.toString(edge.get(0)), Integer.toString(edge.get(1)));
+        }
+        graph.display();
     }
 
     public GameState(int highest_node_id) {
@@ -20,7 +38,7 @@ public class GameState {
         ids_that_have_a_node = new ArrayList<Integer>();
         num_grey_good = 0;
         num_grey_bad = 0;
-        edges = new ArrayList<ArrayList<Node>>();
+        edges = new ArrayList<ArrayList<Integer>>();
         game_over = false;
         redPlayer = new RedAgent();
         bluePlayer = new BlueAgent();
@@ -59,8 +77,8 @@ public class GameState {
     }
 
     public void simulateGreenInteractions() {
-        for (ArrayList<Node> edge : edges) {
-            Node.interact_two_way(edge.get(0), edge.get(1));
+        for (ArrayList<Integer> edge : edges) {
+            Node.interact_two_way(nodes[edge.get(0)], nodes[edge.get(1)]);
         }
     }
 }

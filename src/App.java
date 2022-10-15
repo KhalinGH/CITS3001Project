@@ -315,9 +315,9 @@ public class App {
                 int n1 = chosen_possible_edge.get(0);
                 int n2 = chosen_possible_edge.get(1);
 
-                ArrayList<Node> edge = new ArrayList<Node>();
-                edge.add(game.nodes[n1]);
-                edge.add(game.nodes[n2]);
+                ArrayList<Integer> edge = new ArrayList<Integer>();
+                edge.add(n1);
+                edge.add(n2);
                 game.edges.add(edge);
             }
         }
@@ -367,9 +367,9 @@ public class App {
                     System.out.println("Node " + n2 + " specified in file is not a member of the green team.");
                     System.exit(-1);
                 }
-                ArrayList<Node> edge = new ArrayList<Node>();
-                edge.add(game.nodes[n1]);
-                edge.add(game.nodes[n2]);
+                ArrayList<Integer> edge = new ArrayList<Integer>();
+                edge.add(n1);
+                edge.add(n2);
                 game.edges.add(edge);
             }
             myFileReader.close();
