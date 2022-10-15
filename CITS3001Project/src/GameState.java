@@ -27,20 +27,15 @@ public class GameState {
     
     public void printStats() {
         int goodCount = 0, badCount = 0;
-        double totalGoodUncertainty = 0, totalBadUncertainty = 0;
         for (int id : ids_that_have_a_node) {
             Node n = nodes[id];
-            if (n.opinion) {
+            if (n.opinion)
                 goodCount++;
-                totalGoodUncertainty += n.uncertainty;
-            }
-            else {
+            else
                 badCount++;
-                totalBadUncertainty += n.uncertainty;
-            }
         }
-        System.out.printf("%d member" + (goodCount == 1 ? "" : "s") + " of the green team DO want to vote (their average uncertainty is %.3f).\n", goodCount, totalGoodUncertainty / goodCount);
-        System.out.printf("%d member" + (badCount == 1 ? "" : "s") + " of the green team DO NOT want to vote (their average uncertainty is %.3f).\n", badCount, totalBadUncertainty / badCount);
+        System.out.printf("%d member" + (goodCount == 1 ? "" : "s") + " of the green team DO want to vote.\n", goodCount);
+        System.out.printf("%d member" + (badCount == 1 ? "" : "s") + " of the green team DO NOT want to vote.\n", badCount);
     }
 
     public String getFinalResult() {
