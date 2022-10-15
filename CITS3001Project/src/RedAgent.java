@@ -111,6 +111,4 @@ public class RedAgent {
     public void makeAIMove(GameState game) {
         // TODO: Learning strategy
     }
-
-
 }
