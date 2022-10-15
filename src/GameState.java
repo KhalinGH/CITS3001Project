@@ -22,9 +22,9 @@ public class GameState {
             graph.addNode(Integer.toString(id));
             org.graphstream.graph.Node n = graph.getNode(graphstreamId++);
             if (nodes[id].opinion)
-                n.setAttribute("ui.style", "fill-color: blue;");
+                n.setAttribute("ui.style", "fill-color: rgb(0,0,255);");
             else
-                n.setAttribute("ui.style", "fill-color: red;");
+                n.setAttribute("ui.style", "fill-color: rgb(255,0,0);");
         }
         for (int i=0; i<edges.size(); i++) {
             ArrayList<Integer> edge = edges.get(i);
