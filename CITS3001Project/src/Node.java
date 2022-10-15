@@ -2,10 +2,10 @@ public class Node {
     double uncertainty;
     boolean opinion;
 
-    // Node with a random uncertainty within a range and a random opinion
-    public Node(double minimum_uncertainty, double maximum_uncertainty) {
+    // Node with a random uncertainty within a range and a known opinion
+    public Node(double minimum_uncertainty, double maximum_uncertainty, boolean opinion) {
         this.uncertainty = minimum_uncertainty + (maximum_uncertainty - minimum_uncertainty) * Math.random();
-        this.opinion = Math.random() < 0.5;
+        this.opinion = opinion;
     }
 
     // Node with a known uncertainty and a known opinion

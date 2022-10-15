@@ -53,7 +53,7 @@ public class BlueAgent {
                 System.out.println("There is " + (game.num_grey_good + game.num_grey_bad) + " grey agent remaining.");
             else
                 System.out.println("There are " + (game.num_grey_good + game.num_grey_bad) + " grey agents remaining.");
-            System.out.println("Enter your choice of message potency from 1 to " + num_potencies + ", or enter 'g' to release a grey agent");
+            System.out.println("Enter your choice of message potency from 1 to " + num_potencies + ", or enter 'g' to release a grey agent.");
             System.out.print("Potency:                     \t");
             for (int i = 1; i <= num_potencies; i++)
                 System.out.print(i + "\t");

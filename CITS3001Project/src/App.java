@@ -74,6 +74,41 @@ public class App {
         return new ArrayList<Double>(Arrays.asList(minimum_uncertainty, maximum_uncertainty));
     }
 
+    public static ArrayList<Boolean> getWhoWantsToVote(Scanner scanner, int numNodes) {
+        String input = new String();
+        double proportionThatWantToVote;
+        while (true) {
+            System.out.println("Enter the percentage of green team members that initially want to vote.");
+            input = scanner.nextLine();
+            System.out.println();
+            // If the input ends with "%" or " %", then remove that ending from the input
+            if (!input.isEmpty() && input.charAt(input.length() - 1) == '%') {
+                input = input.substring(0, input.length() - 1);
+                if (!input.isEmpty() && input.charAt(input.length() - 1) == ' ')
+                    input = input.substring(0, input.length() - 1);
+            }
+            try {
+                double percentageThatWantToVote = Double.parseDouble(input);
+                proportionThatWantToVote = percentageThatWantToVote / 100;
+                if (0 <= proportionThatWantToVote && proportionThatWantToVote <= 1)
+                    break;
+                System.out.println("Invalid input.");
+            }
+            catch (NumberFormatException e) {
+                System.out.println("Invalid input.");
+            }
+        }
+        int numberWhoWantToVote = (int)Math.round(proportionThatWantToVote * numNodes);
+        ArrayList<Boolean> whoWantsToVote = new ArrayList<Boolean>();
+        for (int i = 0; i < numberWhoWantToVote; i++)
+            whoWantsToVote.add(true);
+        for (int i = 0; i < numNodes - numberWhoWantToVote; i++)
+            whoWantsToVote.add(false);
+        Collections.shuffle(whoWantsToVote);
+        assert(whoWantsToVote.size() == numNodes);
+        return whoWantsToVote;
+    }
+
     public static GameState get_node_ids_and_teams(Scanner scanner, double minimum_uncertainty, double maximum_uncertainty) {
         String input = new String();
         GameState game;
@@ -107,8 +142,9 @@ public class App {
                 }
             }
             game = new GameState(num_green_agents);
+            ArrayList<Boolean> wantsToVote = getWhoWantsToVote(scanner, num_green_agents);
             for (int i = 1; i <= num_green_agents; i++) {
-                game.nodes[i] = new Node(minimum_uncertainty, maximum_uncertainty);
+                game.nodes[i] = new Node(minimum_uncertainty, maximum_uncertainty, wantsToVote.get(i-1));
                 game.ids_that_have_a_node.add(i);
             }
 
@@ -118,7 +154,9 @@ public class App {
                 System.out.println();
                 try {
                     game.num_grey_good = Integer.parseInt(input);
-                    break;
+                    if (game.num_grey_good >= 0)
+                        break;
+                    System.out.println("Invalid input.");
                 }
                 catch (NumberFormatException e) {
                     System.out.println("Invalid input.");
@@ -130,13 +168,14 @@ public class App {
                 System.out.println();
                 try {
                     game.num_grey_bad = Integer.parseInt(input);
-                    break;
+                    if (game.num_grey_bad >= 0)
+                        break;
+                    System.out.println("Invalid input.");
                 }
                 catch (NumberFormatException e) {
                     System.out.println("Invalid input.");
                 }
             }
-            
         }
         // Use input file to get node ids and teams (must set game.nodes, game.ids_that_have_a_node, game.num_grey_good, game.num_grey_bad)
         else {assert(input.compareTo("f") == 0);
@@ -157,6 +196,7 @@ public class App {
             }
             
             int highest_node_id = -1;
+            int numGreenNodes = 0;
             ArrayList<Integer> temp_ids = new ArrayList<Integer>();
             ArrayList<String> temp_colours = new ArrayList<String>();
             while (myFileReader.hasNextLine()) {
@@ -175,27 +215,32 @@ public class App {
                 temp_colours.add(colour);
                 if (n > highest_node_id)
                     highest_node_id = n;
+                if (colour.compareTo("green") == 0)
+                    numGreenNodes++;
             }
+            myFileReader.close();
 
             game = new GameState(highest_node_id);
+            ArrayList<Boolean> wantsToVote = getWhoWantsToVote(scanner, numGreenNodes);
+            int wantsToVoteIterator = 0;
             assert(temp_ids.size() == temp_colours.size());
             for (int i = 0; i < temp_ids.size(); i++) {
                 int n = temp_ids.get(i);
                 String colour = temp_colours.get(i);
-                if (colour == "green") {
-                    game.nodes[n] = new Node(minimum_uncertainty, maximum_uncertainty);
+                if (colour.compareTo("green") == 0) {
+                    game.nodes[n] = new Node(minimum_uncertainty, maximum_uncertainty, wantsToVote.get(wantsToVoteIterator++));
                     game.ids_that_have_a_node.add(n);
                 }
-                else if (colour == "grey-good")
+                else if (colour.compareTo("grey-good") == 0)
                     game.num_grey_good++;
-                else if (colour == "grey-bad")
+                else if (colour.compareTo("grey-bad") == 0)
                     game.num_grey_bad++;
-                else if (colour != "red" && colour != "blue") {
+                else if (colour.compareTo("red") != 0 && colour.compareTo("blue") != 0) {
                     System.out.println("Team '" + colour + "' not recognised");
                     System.exit(-1);
                 }
             }
-            myFileReader.close();
+            assert(wantsToVoteIterator == numGreenNodes);
         }
         return game;
     }
@@ -218,11 +263,18 @@ public class App {
         if (input.compareTo("p") == 0) {
             double prob_edge;
             while (true) {
-                System.out.println("Enter the proportion of possible edges that should be a real edge (from 0 to 1)."); // TODO: Reword this
+                System.out.println("Enter the percentage of possible edges that should be a real edge.");
                 input = scanner.nextLine();
                 System.out.println();
+                // If the input ends with "%" or " %", then remove that ending from the input
+                if (!input.isEmpty() && input.charAt(input.length() - 1) == '%') {
+                    input = input.substring(0, input.length() - 1);
+                    if (!input.isEmpty() && input.charAt(input.length() - 1) == ' ')
+                        input = input.substring(0, input.length() - 1);
+                }
                 try {
-                    prob_edge = Double.parseDouble(input);
+                    double percentageRealEdges = Double.parseDouble(input);
+                    prob_edge = percentageRealEdges / 100;
                     if (0 <= prob_edge && prob_edge <= 1)
                         break;
                     System.out.println("Invalid input.");
