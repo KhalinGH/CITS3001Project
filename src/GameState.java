@@ -1,4 +1,13 @@
 import java.util.ArrayList;
+import org.jgrapht.*;
+import org.jgrapht.graph.*;
+import org.jgrapht.nio.*;
+import org.jgrapht.nio.dot.*;
+import org.jgrapht.traverse.*;
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
 public class GameState {
     Node[] nodes;
@@ -9,9 +18,28 @@ public class GameState {
     boolean game_over;
     RedAgent redPlayer;
     BlueAgent bluePlayer;
+    
 
     public void display() {
-        // TODO
+        System.out.println("BYE");
+        Graph<Node, DefaultEdge> g = new SimpleGraph<>(DefaultEdge.class);
+        for(int id : ids_that_have_a_node){
+            g.addVertex(node[id]);
+    
+        }
+        for(int i=0; i<edges.size(); i++){
+            g.addEdge(edges.get(i).get(0), edges.get(i).get(1));
+        }
+        JGraphXAdapter<Node, DefaultEdge> graphAdapter = new JGraphXAdapter<Node, DefaultEdge>(g);
+        mxIGraphLayout layout = new mxCircleLayout(graphAdapter);
+        layout.execute(graphAdapter.getDefaultParent());
+    
+        BufferedImage image = mxCellRenderer.createBufferedImage(graphAdapter, null, 2, Color.WHITE, true, null);
+        File imgFile = new File("src/graph.png");
+        System.out.println("Hi");
+        ImageIO.write(image, "PNG", imgFile);
+
+        assertTrue(imgFile.exists());
     }
 
     public GameState(int highest_node_id) {
