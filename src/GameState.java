@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class GameState {
     Node[] nodes;
@@ -24,8 +25,8 @@ public class GameState {
         redPlayer = new RedAgent();
         bluePlayer = new BlueAgent();
     }
-    
-    public void printStats() {
+
+    public ArrayList<Integer> getOpinionCounts() {
         int goodCount = 0, badCount = 0;
         for (int id : ids_that_have_a_node) {
             Node n = nodes[id];
@@ -34,20 +35,22 @@ public class GameState {
             else
                 badCount++;
         }
+        return new ArrayList<Integer>(Arrays.asList(goodCount, badCount));
+    }
+    
+    public void printStats() {
+        ArrayList<Integer> opinionCounts = getOpinionCounts();
+        int goodCount = opinionCounts.get(0);
+        int badCount = opinionCounts.get(1);
         System.out.printf("%d member" + (goodCount == 1 ? "" : "s") + " of the green team DO want to vote.\n", goodCount);
         System.out.printf("%d member" + (badCount == 1 ? "" : "s") + " of the green team DO NOT want to vote.\n", badCount);
     }
 
     public String getFinalResult() {
         assert(bluePlayer.isDone && redPlayer.isDone);
-        int goodCount = 0, badCount = 0;
-        for (int id : ids_that_have_a_node) {
-            Node n = nodes[id];
-            if (n.opinion)
-                goodCount++;
-            else
-                badCount++;
-        }
+        ArrayList<Integer> opinionCounts = getOpinionCounts();
+        int goodCount = opinionCounts.get(0);
+        int badCount = opinionCounts.get(1);
         if (goodCount > badCount)
             return "The blue player wins!";
         if (badCount > goodCount)

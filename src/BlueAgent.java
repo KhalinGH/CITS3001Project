@@ -136,7 +136,18 @@ public class BlueAgent {
         doMove(game, message_potency);
     }
 
+
+    double prior = 0.5;
+    double probGettingGreensIfGreyReleased = 0.5;
+
     public void makeAIMove(GameState game) {
         // TODO: Learning strategy
+        ArrayList<Integer> opinionCounts = game.getOpinionCounts();
+        int goodCount = opinionCounts.get(0);
+        int badCount = opinionCounts.get(1);
+        double propGoodGreens = (double)goodCount / (goodCount + badCount);
+        double bayesianProbGrey = prior * probGettingGreensIfGreyReleased / propGoodGreens;
+
+        
     }
 }
