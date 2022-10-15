@@ -16,7 +16,7 @@ public class GameState {
     
     public void display() {
         System.setProperty("org.graphstream.ui", "swing");
-        Graph graph = new SingleGraph("Tutorial 1");
+        Graph graph = new SingleGraph("");
         int graphstreamId = 0;
         for (int id : ids_that_have_a_node) {
             graph.addNode(Integer.toString(id));
