@@ -27,14 +27,25 @@ public class App {
                 game.bluePlayer.makeHumanMove(game, scanner);
             else
                 game.bluePlayer.makeAIMove(game);
-            
+
+            if (game.bluePlayer.isDone && game.redPlayer.isDone)
+                break;
+
             if (redPlayerIsHuman)
                 game.redPlayer.makeHumanMove(game, scanner);
             else
                 game.redPlayer.makeAIMove(game);
             
+            if (game.bluePlayer.isDone && game.redPlayer.isDone)
+                break;
+            
             game.simulateGreenInteractions();
         }
+
+        System.out.println("*** GAME OVER ***");
+        game.printStats();
+        System.out.println(game.getFinalResult());
+        System.out.println();
 
         scanner.close();
     }

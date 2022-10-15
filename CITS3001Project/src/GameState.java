@@ -43,6 +43,23 @@ public class GameState {
         System.out.printf("%d member" + (badCount == 1 ? "" : "s") + " of the green team DO NOT want to vote (their average uncertainty is %.3f).\n", badCount, totalBadUncertainty / badCount);
     }
 
+    public String getFinalResult() {
+        assert(bluePlayer.isDone && redPlayer.isDone);
+        int goodCount = 0, badCount = 0;
+        for (int id : ids_that_have_a_node) {
+            Node n = nodes[id];
+            if (n.opinion)
+                goodCount++;
+            else
+                badCount++;
+        }
+        if (goodCount > badCount)
+            return "The blue player wins!";
+        if (badCount > goodCount)
+            return "The red player wins!";
+        return "The game is a draw!";
+    }
+
     public void simulateGreenInteractions() {
         for (ArrayList<Node> edge : edges) {
             Node.interact_two_way(edge.get(0), edge.get(1));

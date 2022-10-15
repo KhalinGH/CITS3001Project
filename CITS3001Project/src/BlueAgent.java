@@ -4,11 +4,13 @@ import java.util.Scanner;
 
 public class BlueAgent {
     int energy;
-    static ArrayList<Double> uncertaintyForEachPotency = new ArrayList<Double>(Arrays.asList(-1.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0));
-    static ArrayList<Integer> energyLostForEachPotency = new ArrayList<Integer>(Arrays.asList(-1, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30));
+    boolean isDone;
+    static ArrayList<Double> uncertaintyForEachPotency = new ArrayList<Double>(Arrays.asList(-999.0, 0.8, 0.6, 0.4, 0.2, 0.0, -0.2, -0.4, -0.6, -0.8, -1.0));
+    static ArrayList<Integer> energyLostForEachPotency = new ArrayList<Integer>(Arrays.asList(-999, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40));
 
     public BlueAgent() {
         energy = 100;
+        isDone = false;
     }
 
     public void loseEnergy(int message_potency) {
@@ -27,9 +29,15 @@ public class BlueAgent {
             Node.interact_one_way(greyNode, game.nodes[id]);
     }
 
-    public void doMove(GameState game, int message_potency) { // A message_potency of -1 indicates that a grey agent is being released
+    // A message_potency of -1 indicates that a grey agent is being released
+    // A message_potency of 0 indicates that this blue agent is done
+    public void doMove(GameState game, int message_potency) {
         if (message_potency == -1) {
             releaseGreyAgent(game);
+            return;
+        }
+        if (message_potency == 0) {
+            isDone = true;
             return;
         }
         loseEnergy(message_potency);
@@ -41,52 +49,88 @@ public class BlueAgent {
     public void makeHumanMove(GameState game, Scanner scanner) {
         System.out.println("*** Blue agent's turn ***");
         game.display();
-
         String input = new String();
-        int num_potencies = uncertaintyForEachPotency.size() - 1;
-        int message_potency;
-        while (true) {
+        if (isDone) {
             game.printStats();
-            System.out.println("You, the blue agent, have " + energy + " energy remaining.");
             System.out.println("The red agent has " + game.redPlayer.greenFollowers.size() + " followers remaining.");
-            if (game.num_grey_good + game.num_grey_bad == 1)
-                System.out.println("There is " + (game.num_grey_good + game.num_grey_bad) + " grey agent remaining.");
-            else
-                System.out.println("There are " + (game.num_grey_good + game.num_grey_bad) + " grey agents remaining.");
-            System.out.println("Enter your choice of message potency from 1 to " + num_potencies + ", or enter 'g' to release a grey agent.");
-            System.out.print("Potency:                     \t");
-            for (int i = 1; i <= num_potencies; i++)
-                System.out.print(i + "\t");
-            System.out.println();
-            System.out.print("Uncertainty:                 \t");
-            for (int i = 1; i <= num_potencies; i++)
-                System.out.print(uncertaintyForEachPotency.get(i) + "\t");
-            System.out.println();
-            System.out.print("Energy lost:                 \t");
-            for (int i = 1; i <= num_potencies; i++)
-                System.out.print(energyLostForEachPotency.get(i) + "\t");
-            System.out.println();
+            System.out.println("Press enter to pass your turn.");
             input = scanner.nextLine();
             System.out.println();
-            try {
-                message_potency = Integer.parseInt(input);
-                if (1 <= message_potency && message_potency <= num_potencies) {
-                    if (energy >= energyLostForEachPotency.get(message_potency))
-                        break;
-                    System.out.println("You do not have enough energy to send that message.");
-                }
+            return;
+        }
+
+        int num_potencies = uncertaintyForEachPotency.size() - 1;
+        int message_potency;
+        if (energy < energyLostForEachPotency.get(1)) {
+            while (true) {
+                game.printStats();
+                System.out.println("You, the blue agent, have " + energy + " energy remaining.");
+                System.out.println("The red agent has " + game.redPlayer.greenFollowers.size() + " follower" + (game.redPlayer.greenFollowers.size() == 1 ? "" : "s") + " remaining.");
+                if (game.num_grey_good + game.num_grey_bad == 1)
+                    System.out.println("There is " + (game.num_grey_good + game.num_grey_bad) + " grey agent remaining.");
                 else
-                    System.out.println("Invalid input.");
-            }
-            catch (NumberFormatException e) {
+                    System.out.println("There are " + (game.num_grey_good + game.num_grey_bad) + " grey agents remaining.");
+                System.out.println("You, the blue agent, do not have enough energy remaining to send a message. Enter 'g' to release a grey agent, or 'p' to pass the remainder of your turns (if you pass, the game will end when the red agent runs out of followers).");
+                input = scanner.nextLine();
+                System.out.println();
                 if (input.toLowerCase().compareTo("g") == 0) {
                     message_potency = -1;
                     if (game.num_grey_good + game.num_grey_bad >= 1)
                         break;
                     System.out.println("There are no more grey agents to be released.");
                 }
+                else if (input.toLowerCase().compareTo("p") == 0) {
+                    message_potency = 0;
+                    break;
+                }
                 else
                     System.out.println("Invalid input.");
+            }
+        }
+        else {
+            while (true) {
+                game.printStats();
+                System.out.println("You, the blue agent, have " + energy + " energy remaining.");
+                System.out.println("The red agent has " + game.redPlayer.greenFollowers.size() + " followers remaining.");
+                if (game.num_grey_good + game.num_grey_bad == 1)
+                    System.out.println("There is " + (game.num_grey_good + game.num_grey_bad) + " grey agent remaining.");
+                else
+                    System.out.println("There are " + (game.num_grey_good + game.num_grey_bad) + " grey agents remaining.");
+                System.out.println("Enter your choice of message potency from 1 to " + num_potencies + ", or enter 'g' to release a grey agent.");
+                System.out.print("Potency:                     \t");
+                for (int i = 1; i <= num_potencies; i++)
+                    System.out.print(i + "\t");
+                System.out.println();
+                System.out.print("Uncertainty:                 \t");
+                for (int i = 1; i <= num_potencies; i++)
+                    System.out.print(uncertaintyForEachPotency.get(i) + "\t");
+                System.out.println();
+                System.out.print("Energy lost:                 \t");
+                for (int i = 1; i <= num_potencies; i++)
+                    System.out.print(energyLostForEachPotency.get(i) + "\t");
+                System.out.println();
+                input = scanner.nextLine();
+                System.out.println();
+                try {
+                    message_potency = Integer.parseInt(input);
+                    if (1 <= message_potency && message_potency <= num_potencies) {
+                        if (energy >= energyLostForEachPotency.get(message_potency))
+                            break;
+                        System.out.println("You do not have enough energy to send that message.");
+                    }
+                    else
+                        System.out.println("Invalid input.");
+                }
+                catch (NumberFormatException e) {
+                    if (input.toLowerCase().compareTo("g") == 0) {
+                        message_potency = -1;
+                        if (game.num_grey_good + game.num_grey_bad >= 1)
+                            break;
+                        System.out.println("There are no more grey agents to be released.");
+                    }
+                    else
+                        System.out.println("Invalid input.");
+                }
             }
         }
         doMove(game, message_potency);
