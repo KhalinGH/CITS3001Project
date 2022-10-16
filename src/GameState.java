@@ -11,7 +11,6 @@ public class GameState {
     int num_grey_good;
     int num_grey_bad;
     ArrayList<ArrayList<Integer>> edges;
-    boolean game_over;
     RedAgent redPlayer;
     BlueAgent bluePlayer;
     
@@ -50,7 +49,6 @@ public class GameState {
         num_grey_good = 0;
         num_grey_bad = 0;
         edges = new ArrayList<ArrayList<Integer>>();
-        game_over = false;
         redPlayer = new RedAgent();
         bluePlayer = new BlueAgent();
     }
@@ -67,7 +65,6 @@ public class GameState {
         this.num_grey_good = game.num_grey_good;
         this.num_grey_bad = game.num_grey_bad;
         this.edges = game.edges; // Shallow copy, because this doesn't change throughout the game
-        this.game_over = game.game_over;
         this.redPlayer = new RedAgent(game.redPlayer);
         this.bluePlayer = new BlueAgent(game.bluePlayer);
     }

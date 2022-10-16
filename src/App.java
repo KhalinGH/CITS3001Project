@@ -22,7 +22,7 @@ public class App {
         boolean bluePlayerIsHuman = players.get(0);
         boolean redPlayerIsHuman = players.get(1);
 
-        while (!game.game_over) {
+        while (true) {
             if (bluePlayerIsHuman)
                 game.bluePlayer.makeHumanMove(game, scanner);
             else
@@ -387,7 +387,7 @@ public class App {
         String inputBlue = new String();
         String inputRed = new String();
 
-        // Get players
+        // Decide whether the blue player should be a human or an AI
         while (true) {
             System.out.println("Enter 'h' to make the blue player a human.");
             System.out.println("Enter 'a' to make the blue player an AI.");
@@ -398,7 +398,7 @@ public class App {
             System.out.println("Invalid input.");
         }
 
-        // Get players
+        // Decide whether the red player should be a human or an AI
         while (true) {
             System.out.println("Enter 'h' to make the red player a human.");
             System.out.println("Enter 'a' to make the red player an AI.");
