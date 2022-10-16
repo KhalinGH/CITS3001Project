@@ -66,6 +66,10 @@ public class GameState {
         }
         return new ArrayList<Integer>(Arrays.asList(goodCount, badCount));
     }
+
+    public int getNumGreys() {
+        return num_grey_good + num_grey_bad;
+    }
     
     public void printStats() {
         ArrayList<Integer> opinionCounts = getOpinionCounts();

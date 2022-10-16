@@ -149,17 +149,52 @@ public class BlueAgent {
     }
 
 
-    double prior = 0.5;
-    double probGettingGreensIfGreyReleased = 0.5;
+    double priorGreyProb = 0.5;
+    int numGreysObservedGood = 0;
+    int numGreysObservedBad = 0;
+    int numGreysObservedUnknown = 0;
 
     public void makeAIMove(GameState game) {
+        System.out.println("*** Blue agent's turn ***");
         // TODO: Learning strategy
-        ArrayList<Integer> opinionCounts = game.getOpinionCounts();
-        int goodCount = opinionCounts.get(0);
-        int badCount = opinionCounts.get(1);
-        double propGoodGreens = (double)goodCount / (goodCount + badCount);
-        double bayesianProbGrey = prior * probGettingGreensIfGreyReleased / propGoodGreens;
+        if (game.getNumGreys() >= 1) {
+            ArrayList<Integer> opinionCounts = game.getOpinionCounts();
+            int goodCount = opinionCounts.get(0);
+            int badCount = opinionCounts.get(1);
+            double propGoodGreens = (double)goodCount / (goodCount + badCount);
+            
+            double probGettingGreensIfGreyReleased;
+            if (numGreysObservedGood == 0 && numGreysObservedBad == 0)
+                probGettingGreensIfGreyReleased = 0.5;
+            else if (numGreysObservedGood == 0) {
+                int assumeGood = 1;
+                int assumeBad = numGreysObservedBad * numGreysObservedBad;
+                probGettingGreensIfGreyReleased = (double)assumeGood / (assumeGood + assumeBad);
+            }
+            else if (numGreysObservedBad == 0) {
+                int assumeBad = 1;
+                int assumeGood = numGreysObservedGood * numGreysObservedGood;
+                probGettingGreensIfGreyReleased = (double)assumeGood / (assumeGood + assumeBad);
+            }
+            else
+                probGettingGreensIfGreyReleased = (double)numGreysObservedGood / (numGreysObservedGood + numGreysObservedBad);
 
-        
+            double bayesianProbGrey = priorGreyProb * probGettingGreensIfGreyReleased / propGoodGreens;
+            if (Math.random() < bayesianProbGrey) {
+                doMove(game, -1);
+                ArrayList<Integer> newOpinionCounts = game.getOpinionCounts();
+                int newGoodCount = newOpinionCounts.get(0);
+                if (newGoodCount > goodCount)
+                    numGreysObservedGood++;
+                else if (newGoodCount < goodCount)
+                    numGreysObservedBad++;
+                else
+                    numGreysObservedUnknown++;
+                return;
+            }
+        }
+
+
+
     }
 }

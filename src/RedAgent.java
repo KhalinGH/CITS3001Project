@@ -123,6 +123,7 @@ public class RedAgent {
     }
 
     public void makeAIMove(GameState game) {
+        System.out.println("*** Red agent's turn ***");
         // TODO: Learning strategy
     }
 }
