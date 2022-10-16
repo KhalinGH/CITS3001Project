@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 
 public class Training {
     static double INF = 1e9;
@@ -98,10 +99,43 @@ public class Training {
             }
         }
     }
+    
+    public static int getChildNumber(double prop, int numLeaves) {
+        assert(0 <= prop && prop <= 1);
+        int child = (int)(prop * numLeaves);
+        if (child == numLeaves) // This can only occur when prop is 1
+            child--;
+        return child;
+    }
 
     public static void makeProbabilisticDecisionTrees(GameState game, boolean bluePlayerIsHuman, boolean redPlayerIsHuman) {
         if (!bluePlayerIsHuman) {
+            for (Map.Entry<GameState, Integer> entry: game.bluePlayer.learningData.entrySet()) {
+                DecisionTreeNode n = game.bluePlayer.decisionTree;
+                GameState sampleGame = entry.getKey();
 
+                ArrayList<Integer> opinionCounts = sampleGame.getOpinionCounts();
+                int goodCount = opinionCounts.get(0);
+                int badCount = opinionCounts.get(1);
+                double proportionGood = (double)goodCount / (goodCount + badCount);
+                int child = getChildNumber(proportionGood, DecisionTreeNode.numLeavesPropVoting);
+                n = n.children.get(child);
+
+                double proportionEnergy = (double)sampleGame.bluePlayer.energy / 100;
+                child = getChildNumber(proportionEnergy, DecisionTreeNode.numLeavesPropEnergy);
+                n = n.children.get(child);
+
+                double proportionFollowers = (double)sampleGame.redPlayer.greenFollowers.size() / sampleGame.ids_that_have_a_node.size();
+                child = getChildNumber(proportionFollowers, DecisionTreeNode.numLeavesPropFollowers);
+                n = n.children.get(child);
+
+                if (n.numPiecesOfLearningData == 0)
+                    n.averagePotencyFromLearningData = 0.0;
+                double totalPotencyFromLearningData = n.averagePotencyFromLearningData * n.numPiecesOfLearningData;
+                totalPotencyFromLearningData += entry.getValue();
+                n.numPiecesOfLearningData++;
+                n.averagePotencyFromLearningData = totalPotencyFromLearningData / n.numPiecesOfLearningData;
+            }
         }
         if (!redPlayerIsHuman) {
 
