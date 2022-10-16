@@ -30,14 +30,22 @@ public class Training {
             bestEval = -INF;
             num_potencies = BlueAgent.uncertaintyForEachPotency.size() - 1;
             for (int message_potency = 1; message_potency <= num_potencies; message_potency++) {
-                if (game.bluePlayer.energy >= BlueAgent.energyLostForEachPotency.get(message_potency)) {
-                    GameState newGame = new GameState(game, true);
-                    newGame.bluePlayer.doMove(newGame, message_potency);
-                    double thisEval = run(newGame, false, depthRemaining - 1).get(1);
-                    if (thisEval > bestEval) {
-                        bestEval = thisEval;
-                        bestPotency = message_potency;
-                    }
+                if (game.bluePlayer.energy < BlueAgent.energyLostForEachPotency.get(message_potency))
+                    break;
+                GameState newGame = new GameState(game, true);
+                newGame.bluePlayer.doMove(newGame, message_potency);
+                double thisEval = run(newGame, false, depthRemaining - 1).get(1);
+                if (thisEval > bestEval) {
+                    bestEval = thisEval;
+                    bestPotency = message_potency;
+                }
+            }
+            if (bestEval == -INF) { // If we did not have enough energy to spread any message
+                GameState newGame = new GameState(game, true);
+                double thisEval = run(newGame, false, depthRemaining - 1).get(1);
+                if (thisEval > bestEval) {
+                    bestEval = thisEval;
+                    bestPotency = 0;
                 }
             }
         }
@@ -47,7 +55,7 @@ public class Training {
             for (int message_potency = 1; message_potency <= num_potencies; message_potency++) {
                 GameState newGame = new GameState(game, true);
                 newGame.redPlayer.doMove(newGame, message_potency);
-                double thisEval = run(newGame, false, depthRemaining - 1).get(1);
+                double thisEval = run(newGame, true, depthRemaining - 1).get(1);
                 if (thisEval < bestEval) {
                     bestEval = thisEval;
                     bestPotency = message_potency;
@@ -66,30 +74,37 @@ public class Training {
     }
 
     public static void trainOnGames(GameState gameForWhichWeAreTraining) {
-        System.out.println("Training agents...");
-        System.out.println("This should be done within about 7 seconds.");
-        System.out.println();
         GameState x = gameForWhichWeAreTraining;
         int numNodes = x.ids_that_have_a_node.size();
-        int numGames = 2000 / numNodes; // For each single game, much learning data will be acquired
-        if (numGames > 1000)
-            numGames = 1000;
-        int depth = 3;
+        int numGames = 1500 / numNodes; // For each single game, much learning data will be acquired
+        if (numGames > 200)
+            numGames = 200;
+        if (numGames < 7)
+            numGames = 7;
+        int depth;
+        if (numNodes <= 500)
+            depth = 4;
+        else
+            depth = 3;
         for (int i = 0; i < numGames; i++) {
             GameState game = new GameState(x, false);
             App.addProportionOfEdges(game, Math.random());
             while (true) {
                 int bestMoveBlue = (int)Math.round(run(game, true, depth).get(0));
-                addToBlueLearningData(game, bestMoveBlue, x.bluePlayer);
-                game.bluePlayer.doMove(game, bestMoveBlue);
+                if (bestMoveBlue != 0) {
+                    addToBlueLearningData(new GameState(game, true), bestMoveBlue, x.bluePlayer);
+                    game.bluePlayer.doMove(game, bestMoveBlue);
+                }
 
                 if (game.bluePlayer.energy < BlueAgent.energyLostForEachPotency.get(1) &&
                     game.redPlayer.greenFollowers.size() == 0)
                     break;
 
                 int bestMoveRed = (int)Math.round(run(game, false, depth).get(0));
-                addToRedLearningData(game, bestMoveRed, x.redPlayer);
-                game.redPlayer.doMove(game, bestMoveRed);
+                if (bestMoveRed != 0) {
+                    addToRedLearningData(new GameState(game, true), bestMoveRed, x.redPlayer);
+                    game.redPlayer.doMove(game, bestMoveRed);
+                }
 
                 if (game.bluePlayer.energy < BlueAgent.energyLostForEachPotency.get(1) &&
                     game.redPlayer.greenFollowers.size() == 0)
@@ -108,37 +123,49 @@ public class Training {
         return child;
     }
 
-    public static void makeProbabilisticDecisionTrees(GameState game, boolean bluePlayerIsHuman, boolean redPlayerIsHuman) {
-        if (!bluePlayerIsHuman) {
-            for (Map.Entry<GameState, Integer> entry: game.bluePlayer.learningData.entrySet()) {
-                DecisionTreeNode n = game.bluePlayer.decisionTree;
-                GameState sampleGame = entry.getKey();
-
-                ArrayList<Integer> opinionCounts = sampleGame.getOpinionCounts();
-                int goodCount = opinionCounts.get(0);
-                int badCount = opinionCounts.get(1);
-                double proportionGood = (double)goodCount / (goodCount + badCount);
-                int child = getChildNumber(proportionGood, DecisionTreeNode.numLeavesPropVoting);
-                n = n.children.get(child);
-
-                double proportionEnergy = (double)sampleGame.bluePlayer.energy / 100;
-                child = getChildNumber(proportionEnergy, DecisionTreeNode.numLeavesPropEnergy);
-                n = n.children.get(child);
-
-                double proportionFollowers = (double)sampleGame.redPlayer.greenFollowers.size() / sampleGame.ids_that_have_a_node.size();
-                child = getChildNumber(proportionFollowers, DecisionTreeNode.numLeavesPropFollowers);
-                n = n.children.get(child);
-
-                if (n.numPiecesOfLearningData == 0)
-                    n.averagePotencyFromLearningData = 0.0;
-                double totalPotencyFromLearningData = n.averagePotencyFromLearningData * n.numPiecesOfLearningData;
-                totalPotencyFromLearningData += entry.getValue();
-                n.numPiecesOfLearningData++;
-                n.averagePotencyFromLearningData = totalPotencyFromLearningData / n.numPiecesOfLearningData;
+    public static void fillDecisionTreeFromLearningData(DecisionTreeNode decisionTree, Map<GameState, Integer> learningData) {
+        for (int i = 0; i < DecisionTreeNode.numLeavesPropVoting; i++) {
+            decisionTree.children.add(new DecisionTreeNode());
+            DecisionTreeNode d1 = decisionTree.children.get(i);
+            for (int j = 0; j < DecisionTreeNode.numLeavesPropEnergy; j++) {
+                d1.children.add(new DecisionTreeNode());
+                DecisionTreeNode d2 = d1.children.get(j);
+                for (int k = 0; k < DecisionTreeNode.numLeavesPropFollowers; k++)
+                    d2.children.add(new DecisionTreeNode());
             }
         }
-        if (!redPlayerIsHuman) {
+        for (Map.Entry<GameState, Integer> entry: learningData.entrySet()) {
+            DecisionTreeNode n = decisionTree;
+            GameState sampleGame = entry.getKey();
 
+            ArrayList<Integer> opinionCounts = sampleGame.getOpinionCounts();
+            int goodCount = opinionCounts.get(0);
+            int badCount = opinionCounts.get(1);
+            double proportionGood = (double)goodCount / (goodCount + badCount);
+            int child = getChildNumber(proportionGood, DecisionTreeNode.numLeavesPropVoting);
+            n = n.children.get(child);
+            
+            double proportionEnergy = (double)sampleGame.bluePlayer.energy / 100;
+            child = getChildNumber(proportionEnergy, DecisionTreeNode.numLeavesPropEnergy);
+            n = n.children.get(child);
+            
+            double proportionFollowers = (double)sampleGame.redPlayer.greenFollowers.size() / sampleGame.ids_that_have_a_node.size();
+            child = getChildNumber(proportionFollowers, DecisionTreeNode.numLeavesPropFollowers);
+            n = n.children.get(child);
+            
+            if (n.numPiecesOfLearningData == 0)
+                n.averagePotencyFromLearningData = 0.0;
+            double totalPotencyFromLearningData = n.averagePotencyFromLearningData * n.numPiecesOfLearningData;
+            totalPotencyFromLearningData += entry.getValue();
+            n.numPiecesOfLearningData++;
+            n.averagePotencyFromLearningData = totalPotencyFromLearningData / n.numPiecesOfLearningData;
         }
+    }
+
+    public static void makeProbabilisticDecisionTrees(GameState game, boolean bluePlayerIsHuman, boolean redPlayerIsHuman) {
+        if (!bluePlayerIsHuman)
+            fillDecisionTreeFromLearningData(game.bluePlayer.decisionTree, game.bluePlayer.learningData);
+        if (!redPlayerIsHuman)
+            fillDecisionTreeFromLearningData(game.redPlayer.decisionTree, game.redPlayer.learningData);
     }
 }

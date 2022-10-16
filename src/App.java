@@ -23,6 +23,9 @@ public class App {
         boolean redPlayerIsHuman = players.get(1);
 
         if (!bluePlayerIsHuman || !redPlayerIsHuman) {
+            System.out.println("Training agents and building probabilistic decision trees...");
+            System.out.println("This should be done within about 10 seconds.");
+            System.out.println();
             Training.trainOnGames(game);
             Training.makeProbabilisticDecisionTrees(game, bluePlayerIsHuman, redPlayerIsHuman);
         }
