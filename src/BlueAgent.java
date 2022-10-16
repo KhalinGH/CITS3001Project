@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class BlueAgent {
@@ -7,16 +9,19 @@ public class BlueAgent {
     boolean isDone;
     static ArrayList<Double> uncertaintyForEachPotency = new ArrayList<Double>(Arrays.asList(-999.0, 0.8, 0.6, 0.4, 0.2, 0.0, -0.2, -0.4, -0.6, -0.8, -1.0));
     static ArrayList<Integer> energyLostForEachPotency = new ArrayList<Integer>(Arrays.asList(-999, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40));
+    Map<GameState, Integer> learningData;
 
     public BlueAgent() {
         energy = 100;
         isDone = false;
+        learningData = new HashMap<GameState, Integer>();
     }
 
     // Make a copy of this blue agent
     public BlueAgent(BlueAgent x) {
         this.energy = x.energy;
         this.isDone = x.isDone;
+        learningData = x.learningData; // Shallow copy, because this doesn't change for duplicated agents doing training games
     }
 
     public void loseEnergy(int message_potency) {
@@ -30,7 +35,7 @@ public class BlueAgent {
             game.num_grey_good--;
         else
             game.num_grey_bad--;
-        Node greyNode = new Node(is_good);
+        Node greyNode = new Node(is_good, -1);
         for (int id : game.ids_that_have_a_node)
             Node.interact_one_way(greyNode, game.nodes[id]);
     }
@@ -47,7 +52,7 @@ public class BlueAgent {
             return;
         }
         loseEnergy(message_potency);
-        Node blueNode = new Node(uncertaintyForEachPotency.get(message_potency), true);
+        Node blueNode = new Node(uncertaintyForEachPotency.get(message_potency), true, -1);
         for (int id : game.ids_that_have_a_node)
             Node.interact_one_way(blueNode, game.nodes[id]);
     }
@@ -208,6 +213,6 @@ public class BlueAgent {
                 return;
             }
         }
-        
+
     }
 }

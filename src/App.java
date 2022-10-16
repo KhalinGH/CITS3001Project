@@ -22,6 +22,10 @@ public class App {
         boolean bluePlayerIsHuman = players.get(0);
         boolean redPlayerIsHuman = players.get(1);
 
+        if (!bluePlayerIsHuman || !redPlayerIsHuman) {
+            Training.trainOnGames(game);
+        }
+
         while (true) {
             if (bluePlayerIsHuman)
                 game.bluePlayer.makeHumanMove(game, scanner);
@@ -89,7 +93,7 @@ public class App {
         String input = new String();
         double proportionThatWantToVote;
         while (true) {
-            System.out.println("Enter the percentage of green team members that initially want to vote.");
+            System.out.println("Enter the percentage of green team members that initially want to vote (from 0 to 100).");
             input = scanner.nextLine();
             System.out.println();
             // If the input ends with "%" or " %", then remove that ending from the input
@@ -139,7 +143,7 @@ public class App {
         if (input.compareTo("p") == 0) {
             int num_green_agents;
             while (true) {
-                System.out.println("Enter the number of green team members.");
+                System.out.println("Enter the number of green team members (maximum 1000).");
                 input = scanner.nextLine();
                 System.out.println();
                 try {
@@ -155,7 +159,7 @@ public class App {
             game = new GameState(num_green_agents);
             ArrayList<Boolean> wantsToVote = getWhoWantsToVote(scanner, num_green_agents);
             for (int i = 1; i <= num_green_agents; i++) {
-                game.nodes[i] = new Node(minimum_uncertainty, maximum_uncertainty, wantsToVote.get(i-1));
+                game.nodes[i] = new Node(minimum_uncertainty, maximum_uncertainty, wantsToVote.get(i-1), i);
                 game.ids_that_have_a_node.add(i);
             }
 
@@ -239,7 +243,7 @@ public class App {
                 int n = temp_ids.get(i);
                 String colour = temp_colours.get(i);
                 if (colour.compareTo("green") == 0) {
-                    game.nodes[n] = new Node(minimum_uncertainty, maximum_uncertainty, wantsToVote.get(wantsToVoteIterator++));
+                    game.nodes[n] = new Node(minimum_uncertainty, maximum_uncertainty, wantsToVote.get(wantsToVoteIterator++), n);
                     game.ids_that_have_a_node.add(n);
                 }
                 else if (colour.compareTo("grey-good") == 0)
@@ -254,6 +258,34 @@ public class App {
             assert(wantsToVoteIterator == numGreenNodes);
         }
         return game;
+    }
+
+    public static void addProportionOfEdges(GameState game, double prob_edge) {
+        int num_nodes = game.ids_that_have_a_node.size();
+        ArrayList<ArrayList<Integer>> possible_edges = new ArrayList<ArrayList<Integer>>();
+        for (int i = 0; i < game.ids_that_have_a_node.size(); i++)
+            for (int j = i + 1; j < game.ids_that_have_a_node.size(); j++) {
+                int id1 = game.ids_that_have_a_node.get(i);
+                int id2 = game.ids_that_have_a_node.get(j);
+                ArrayList<Integer> edge = new ArrayList<Integer>();
+                edge.add(id1);
+                edge.add(id2);
+                possible_edges.add(edge);
+            }
+        assert(possible_edges.size() == num_nodes * (num_nodes - 1) / 2);
+        int num_edges = (int)Math.round(prob_edge * possible_edges.size());
+
+        Collections.shuffle(possible_edges);
+        for (int i = 0; i < num_edges; i++) {
+            ArrayList<Integer> chosen_possible_edge = possible_edges.get(i);
+            int n1 = chosen_possible_edge.get(0);
+            int n2 = chosen_possible_edge.get(1);
+
+            ArrayList<Integer> edge = new ArrayList<Integer>();
+            edge.add(n1);
+            edge.add(n2);
+            game.edges.add(edge);
+        }
     }
 
     public static void getGraph(Scanner scanner, GameState game) {
@@ -274,7 +306,7 @@ public class App {
         if (input.compareTo("p") == 0) {
             double prob_edge;
             while (true) {
-                System.out.println("Enter the percentage of possible edges that should be a real edge.");
+                System.out.println("Enter the percentage of possible edges that should be a real edge (from 0 to 100).");
                 input = scanner.nextLine();
                 System.out.println();
                 // If the input ends with "%" or " %", then remove that ending from the input
@@ -294,32 +326,7 @@ public class App {
                     System.out.println("Invalid input.");
                 }
             }
-
-            int num_nodes = game.ids_that_have_a_node.size();
-            ArrayList<ArrayList<Integer>> possible_edges = new ArrayList<ArrayList<Integer>>();
-            for (int i = 0; i < game.ids_that_have_a_node.size(); i++)
-                for (int j = i + 1; j < game.ids_that_have_a_node.size(); j++) {
-                    int id1 = game.ids_that_have_a_node.get(i);
-                    int id2 = game.ids_that_have_a_node.get(j);
-                    ArrayList<Integer> edge = new ArrayList<Integer>();
-                    edge.add(id1);
-                    edge.add(id2);
-                    possible_edges.add(edge);
-                }
-            assert(possible_edges.size() == num_nodes * (num_nodes - 1) / 2);
-            int num_edges = (int)Math.round(prob_edge * possible_edges.size());
-
-            Collections.shuffle(possible_edges);
-            for (int i = 0; i < num_edges; i++) {
-                ArrayList<Integer> chosen_possible_edge = possible_edges.get(i);
-                int n1 = chosen_possible_edge.get(0);
-                int n2 = chosen_possible_edge.get(1);
-
-                ArrayList<Integer> edge = new ArrayList<Integer>();
-                edge.add(n1);
-                edge.add(n2);
-                game.edges.add(edge);
-            }
+            addProportionOfEdges(game, prob_edge);
         }
         // Use input file to get graph (must set game.edges)
         else {assert(input.compareTo("f") == 0);
@@ -379,7 +386,8 @@ public class App {
     public static void giveRedFollowers(GameState game) {
         // Give red followers (must set game.redPlayer.greenFollowers)
         for (int id : game.ids_that_have_a_node) {
-            game.redPlayer.greenFollowers.add(id);
+            Node n = game.nodes[id];
+            game.redPlayer.greenFollowers.add(n);
         }
     }
 

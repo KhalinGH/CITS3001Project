@@ -1,25 +1,30 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class RedAgent {
-    ArrayList<Integer> greenFollowers;
+    ArrayList<Node> greenFollowers;
     boolean isDone;
     static ArrayList<Double> uncertaintyForEachPotency = new ArrayList<Double>(Arrays.asList(-999.0, 0.8, 0.6, 0.4, 0.2, 0.0, -0.2, -0.4, -0.6, -0.8, -1.0));
     static ArrayList<Double> proportionFollowersLostForEachPotency = new ArrayList<Double>(Arrays.asList(-999.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50));
+    Map<GameState, Integer> learningData;
 
     public RedAgent() {
-        greenFollowers = new ArrayList<Integer>();
+        greenFollowers = new ArrayList<Node>();
         isDone = false;
+        learningData = new HashMap<GameState, Integer>();
     }
 
     // Make a copy of this red agent
-    public RedAgent(RedAgent x) {
-        this.greenFollowers = new ArrayList<Integer>();
-        for (int e : x.greenFollowers)
-            this.greenFollowers.add(e);
+    public RedAgent(RedAgent x, GameState game) {
+        this.greenFollowers = new ArrayList<Node>();
+        for (Node e : x.greenFollowers)
+            this.greenFollowers.add(game.nodes[e.id]);
         this.isDone = x.isDone;
+        learningData = x.learningData; // Shallow copy, because this doesn't change for duplicated agents doing training games
     }
     
     public void loseFollowers(int message_potency) {
@@ -27,7 +32,7 @@ public class RedAgent {
         int numFollowersLost = (int)Math.round(proportionLost * greenFollowers.size());
         if (numFollowersLost == 0 && greenFollowers.size() != 0) // TODO: Is this a good system?
             numFollowersLost = 1;
-        Collections.shuffle(greenFollowers);
+        Collections.sort(greenFollowers, new CompareFollowersByOpinionAndUncertainty());
         for (int i = 0; i < numFollowersLost; i++)
             greenFollowers.remove(greenFollowers.size() - 1);
     }
@@ -39,9 +44,9 @@ public class RedAgent {
             return;
         }
         loseFollowers(message_potency);
-        Node redNode = new Node(uncertaintyForEachPotency.get(message_potency), false);
-        for (int id : greenFollowers)
-            Node.interact_one_way(redNode, game.nodes[id]);
+        Node redNode = new Node(uncertaintyForEachPotency.get(message_potency), false, -1);
+        for (Node n : greenFollowers)
+            Node.interact_one_way(redNode, n);
     }
 
     public void makeHumanMove(GameState game, Scanner scanner) {

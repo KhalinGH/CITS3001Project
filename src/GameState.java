@@ -11,8 +11,8 @@ public class GameState {
     int num_grey_good;
     int num_grey_bad;
     ArrayList<ArrayList<Integer>> edges;
-    RedAgent redPlayer;
     BlueAgent bluePlayer;
+    RedAgent redPlayer;
     
     public void display() {
         System.setProperty("org.graphstream.ui", "swing");
@@ -49,11 +49,11 @@ public class GameState {
         num_grey_good = 0;
         num_grey_bad = 0;
         edges = new ArrayList<ArrayList<Integer>>();
-        redPlayer = new RedAgent();
         bluePlayer = new BlueAgent();
+        redPlayer = new RedAgent();
     }
 
-    public GameState(GameState game) {
+    public GameState(GameState game, boolean copyEdges) {
         this.nodes = new Node[game.nodes.length];
         for (int i = 0; i < nodes.length; i++) {
             if (game.nodes[i] == null)
@@ -64,9 +64,12 @@ public class GameState {
         this.ids_that_have_a_node = game.ids_that_have_a_node; // Shallow copy, because this doesn't change throughout the game
         this.num_grey_good = game.num_grey_good;
         this.num_grey_bad = game.num_grey_bad;
-        this.edges = game.edges; // Shallow copy, because this doesn't change throughout the game
-        this.redPlayer = new RedAgent(game.redPlayer);
+        if (copyEdges)
+            this.edges = game.edges; // Shallow copy, because this doesn't change throughout the game
+        else
+            this.edges = new ArrayList<ArrayList<Integer>>();
         this.bluePlayer = new BlueAgent(game.bluePlayer);
+        this.redPlayer = new RedAgent(game.redPlayer, game);
     }
 
     public ArrayList<Integer> getOpinionCounts() {
