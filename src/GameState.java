@@ -34,6 +34,7 @@ public class GameState {
         }
         Viewer viewer = graph.display();
         viewer.setCloseFramePolicy(Viewer.CloseFramePolicy.HIDE_ONLY);
+        System.out.println("Visualisation opened in another window. Close visualisation window when you have finished viewing it.\n");
     }
 
     public void listGreenData() {

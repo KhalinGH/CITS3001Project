@@ -118,6 +118,8 @@ public class RedAgent {
             }
         }
         doMove(game, message_potency);
+        game.printStats();
+        System.out.println();
     }
 
     public void makeAIMove(GameState game) {
