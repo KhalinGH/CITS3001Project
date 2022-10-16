@@ -8,6 +8,6 @@ public class DecisionTreeNode {
     public DecisionTreeNode() {
         children = new ArrayList<DecisionTreeNode>();
         numPiecesOfLearningData = 0;
-        averagePotencyFromLearningData = 0.0;
+        averagePotencyFromLearningData = 3.0;
     }
 }
