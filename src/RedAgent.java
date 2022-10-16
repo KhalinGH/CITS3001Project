@@ -38,14 +38,16 @@ public class RedAgent {
 
     public void makeHumanMove(GameState game, Scanner scanner) {
         System.out.println("*** Red agent's turn ***");
-        game.display();
         String input = new String();
         if (isDone) {
             game.printStats();
-            System.out.println("The blue agent has " + game.bluePlayer.energy + " energy remaining.");
             System.out.println("Press enter to pass your turn.");
             input = scanner.nextLine();
             System.out.println();
+            if (input.toLowerCase().compareTo("!v") == 0)
+                game.display();
+            else if (input.toLowerCase().compareTo("!t") == 0)
+                game.listGreenData();
             return;
         }
 
@@ -54,27 +56,30 @@ public class RedAgent {
         if (greenFollowers.size() == 0) {
             while (true) {
                 game.printStats();
-                System.out.println("You, the red agent, have " + greenFollowers.size() + " follower" + (greenFollowers.size() == 1 ? "" : "s") + " remaining.");
-                System.out.println("The blue agent has " + game.bluePlayer.energy + " energy remaining.");
+                System.out.println("You have " + greenFollowers.size() + " follower" + (greenFollowers.size() == 1 ? "" : "s") + " remaining.");
                 if (game.num_grey_good + game.num_grey_bad == 1)
                     System.out.println("There is " + (game.num_grey_good + game.num_grey_bad) + " grey agent remaining.");
                 else
                     System.out.println("There are " + (game.num_grey_good + game.num_grey_bad) + " grey agents remaining.");
-                System.out.println("You, the red agent, do not have any followers remaining to whom to send a message. Enter 'p' to pass the remainder of your turns (if you pass, the game will end when the blue agent runs out of energy).");
+                System.out.println("You do not have any followers remaining to whom to send a message. Enter 'p' to pass the remainder of your turns (if you pass, the game will end when the blue agent runs out of energy).");
                 input = scanner.nextLine();
                 System.out.println();
                 if (input.toLowerCase().compareTo("p") == 0) {
                     message_potency = 0;
                     break;
                 }
-                System.out.println("Invalid input.");
+                else if (input.toLowerCase().compareTo("!v") == 0)
+                    game.display();
+                else if (input.toLowerCase().compareTo("!t") == 0)
+                    game.listGreenData();
+                else
+                    System.out.println("Invalid input.");
             }
         }
         else {
             while (true) {
                 game.printStats();
-                System.out.println("You, the red agent, have " + greenFollowers.size() + " follower" + (greenFollowers.size() == 1 ? "" : "s") + " remaining.");
-                System.out.println("The blue agent has " + game.bluePlayer.energy + " energy remaining.");
+                System.out.println("You have " + greenFollowers.size() + " follower" + (greenFollowers.size() == 1 ? "" : "s") + " remaining.");
                 if (game.num_grey_good + game.num_grey_bad == 1)
                     System.out.println("There is " + (game.num_grey_good + game.num_grey_bad) + " grey agent remaining.");
                 else
@@ -101,7 +106,12 @@ public class RedAgent {
                     System.out.println("Invalid input.");
                 }
                 catch (NumberFormatException e) {
-                    System.out.println("Invalid input.");
+                    if (input.toLowerCase().compareTo("!v") == 0)
+                        game.display();
+                    else if (input.toLowerCase().compareTo("!t") == 0)
+                        game.listGreenData();
+                    else
+                        System.out.println("Invalid input.");
                 }
             }
         }

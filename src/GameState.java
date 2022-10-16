@@ -1,8 +1,9 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.graph.Graph;
+import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.ui.view.Viewer;
 
 public class GameState {
     Node[] nodes;
@@ -21,16 +22,25 @@ public class GameState {
         for (int id : ids_that_have_a_node) {
             graph.addNode(Integer.toString(id));
             org.graphstream.graph.Node n = graph.getNode(graphstreamId++);
+            double colourStrength = 50 + (1 - nodes[id].uncertainty) / 2 * 205;
             if (nodes[id].opinion)
-                n.setAttribute("ui.style", "fill-color: rgb(0,0,255);");
+                n.setAttribute("ui.style", "fill-color: rgb(0,0," + (int)colourStrength + "); size: 20px;");
             else
-                n.setAttribute("ui.style", "fill-color: rgb(255,0,0);");
+                n.setAttribute("ui.style", "fill-color: rgb(" + (int)colourStrength + ",0,0); size: 20px;");
         }
         for (int i=0; i<edges.size(); i++) {
             ArrayList<Integer> edge = edges.get(i);
             graph.addEdge(Integer.toString(i), Integer.toString(edge.get(0)), Integer.toString(edge.get(1)));
         }
-        graph.display();
+        Viewer viewer = graph.display();
+        viewer.setCloseFramePolicy(Viewer.CloseFramePolicy.HIDE_ONLY);
+    }
+
+    public void listGreenData() {
+        System.out.println("Opinion\t Uncertainty");
+        for (int id : ids_that_have_a_node)
+            System.out.println(nodes[id].opinion + "\t " + nodes[id].uncertainty);
+        System.out.println();
     }
 
     public GameState(int highest_node_id) {

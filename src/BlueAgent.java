@@ -48,14 +48,18 @@ public class BlueAgent {
 
     public void makeHumanMove(GameState game, Scanner scanner) {
         System.out.println("*** Blue agent's turn ***");
-        game.display();
+        System.out.println("ADMINISTRATOR: Enter '!v' to display visualisation of current network. Darker colours indicate more certainty of opinion");
+        System.out.println("ADMINISTRATOR: Enter '!t' to list all green nodes' opinions and uncertainties");
         String input = new String();
         if (isDone) {
             game.printStats();
-            System.out.println("The red agent has " + game.redPlayer.greenFollowers.size() + " followers remaining.");
             System.out.println("Press enter to pass your turn.");
             input = scanner.nextLine();
             System.out.println();
+            if (input.toLowerCase().compareTo("!v") == 0)
+                game.display();
+            else if (input.toLowerCase().compareTo("!t") == 0)
+                game.listGreenData();
             return;
         }
 
@@ -64,13 +68,12 @@ public class BlueAgent {
         if (energy < energyLostForEachPotency.get(1)) {
             while (true) {
                 game.printStats();
-                System.out.println("You, the blue agent, have " + energy + " energy remaining.");
-                System.out.println("The red agent has " + game.redPlayer.greenFollowers.size() + " follower" + (game.redPlayer.greenFollowers.size() == 1 ? "" : "s") + " remaining.");
+                System.out.println("You have " + energy + " energy remaining.");
                 if (game.num_grey_good + game.num_grey_bad == 1)
                     System.out.println("There is " + (game.num_grey_good + game.num_grey_bad) + " grey agent remaining.");
                 else
                     System.out.println("There are " + (game.num_grey_good + game.num_grey_bad) + " grey agents remaining.");
-                System.out.println("You, the blue agent, do not have enough energy remaining to send a message. Enter 'g' to release a grey agent, or 'p' to pass the remainder of your turns (if you pass, the game will end when the red agent runs out of followers).");
+                System.out.println("You do not have enough energy remaining to send a message. Enter 'g' to release a grey agent, or 'p' to pass the remainder of your turns (if you pass, the game will end when the red agent runs out of followers).");
                 input = scanner.nextLine();
                 System.out.println();
                 if (input.toLowerCase().compareTo("g") == 0) {
@@ -83,6 +86,10 @@ public class BlueAgent {
                     message_potency = 0;
                     break;
                 }
+                else if (input.toLowerCase().compareTo("!v") == 0)
+                    game.display();
+                else if (input.toLowerCase().compareTo("!t") == 0)
+                    game.listGreenData();
                 else
                     System.out.println("Invalid input.");
             }
@@ -90,8 +97,7 @@ public class BlueAgent {
         else {
             while (true) {
                 game.printStats();
-                System.out.println("You, the blue agent, have " + energy + " energy remaining.");
-                System.out.println("The red agent has " + game.redPlayer.greenFollowers.size() + " followers remaining.");
+                System.out.println("You have " + energy + " energy remaining.");
                 if (game.num_grey_good + game.num_grey_bad == 1)
                     System.out.println("There is " + (game.num_grey_good + game.num_grey_bad) + " grey agent remaining.");
                 else
@@ -128,6 +134,10 @@ public class BlueAgent {
                             break;
                         System.out.println("There are no more grey agents to be released.");
                     }
+                    else if (input.toLowerCase().compareTo("!v") == 0)
+                        game.display();
+                    else if (input.toLowerCase().compareTo("!t") == 0)
+                        game.listGreenData();
                     else
                         System.out.println("Invalid input.");
                 }
