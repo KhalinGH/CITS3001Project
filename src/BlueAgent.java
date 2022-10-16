@@ -10,18 +10,21 @@ public class BlueAgent {
     static ArrayList<Double> uncertaintyForEachPotency = new ArrayList<Double>(Arrays.asList(-999.0, 0.8, 0.6, 0.4, 0.2, 0.0, -0.2, -0.4, -0.6, -0.8, -1.0));
     static ArrayList<Integer> energyLostForEachPotency = new ArrayList<Integer>(Arrays.asList(-999, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40));
     Map<GameState, Integer> learningData;
+    DecisionTreeNode decisionTree;
 
     public BlueAgent() {
         energy = 100;
         isDone = false;
         learningData = new HashMap<GameState, Integer>();
+        decisionTree = new DecisionTreeNode();
     }
 
     // Make a copy of this blue agent
     public BlueAgent(BlueAgent x) {
         this.energy = x.energy;
         this.isDone = x.isDone;
-        learningData = x.learningData; // Shallow copy, because this doesn't change for duplicated agents doing training games
+        this.learningData = x.learningData; // Shallow copy, because this doesn't change for duplicated agents doing training games
+        this.decisionTree = x.decisionTree; // Shallow copy, because this doesn't change for duplicated agents doing training games
     }
 
     public void loseEnergy(int message_potency) {

@@ -11,11 +11,13 @@ public class RedAgent {
     static ArrayList<Double> uncertaintyForEachPotency = new ArrayList<Double>(Arrays.asList(-999.0, 0.8, 0.6, 0.4, 0.2, 0.0, -0.2, -0.4, -0.6, -0.8, -1.0));
     static ArrayList<Double> proportionFollowersLostForEachPotency = new ArrayList<Double>(Arrays.asList(-999.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50));
     Map<GameState, Integer> learningData;
+    DecisionTreeNode decisionTree;
 
     public RedAgent() {
         greenFollowers = new ArrayList<Node>();
         isDone = false;
         learningData = new HashMap<GameState, Integer>();
+        decisionTree = new DecisionTreeNode();
     }
 
     // Make a copy of this red agent
@@ -24,7 +26,8 @@ public class RedAgent {
         for (Node e : x.greenFollowers)
             this.greenFollowers.add(game.nodes[e.id]);
         this.isDone = x.isDone;
-        learningData = x.learningData; // Shallow copy, because this doesn't change for duplicated agents doing training games
+        this.learningData = x.learningData; // Shallow copy, because this doesn't change for duplicated agents doing training games
+        this.decisionTree = x.decisionTree; // Shallow copy, because this doesn't change for duplicated agents doing training games
     }
     
     public void loseFollowers(int message_potency) {

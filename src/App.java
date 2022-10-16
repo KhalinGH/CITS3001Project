@@ -24,7 +24,7 @@ public class App {
 
         if (!bluePlayerIsHuman || !redPlayerIsHuman) {
             Training.trainOnGames(game);
-            Training.makeProbabilisticDecisionTrees(game);
+            Training.makeProbabilisticDecisionTrees(game, bluePlayerIsHuman, redPlayerIsHuman);
         }
 
         while (true) {
