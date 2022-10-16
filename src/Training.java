@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class runAnExercise {
+public class Training {
     static double INF = 1e9;
 
     public static double initEval(GameState game) {
