@@ -20,6 +20,13 @@ public class Node {
         this.opinion = isGood;
     }
 
+    // Duplicate a node
+    public Node(Node n) {
+        assert(n != null);
+        this.uncertainty = n.uncertainty;
+        this.opinion = n.opinion;
+    }
+
     public static void changeParametersOfB(Node a, Node b) {
         // TODO: Change b.opinion and/or b.uncertainty based on a.opinion and/or a.uncertainty
     }

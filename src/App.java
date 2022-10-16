@@ -379,8 +379,7 @@ public class App {
     public static void giveRedFollowers(GameState game) {
         // Give red followers (must set game.redPlayer.greenFollowers)
         for (int id : game.ids_that_have_a_node) {
-            Node n = game.nodes[id];
-            game.redPlayer.greenFollowers.add(n);
+            game.redPlayer.greenFollowers.add(id);
         }
     }
 

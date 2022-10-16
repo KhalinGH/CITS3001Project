@@ -55,6 +55,23 @@ public class GameState {
         bluePlayer = new BlueAgent();
     }
 
+    public GameState(GameState game) {
+        this.nodes = new Node[game.nodes.length];
+        for (int i = 0; i < nodes.length; i++) {
+            if (game.nodes[i] == null)
+                this.nodes[i] = null;
+            else
+                this.nodes[i] = new Node(game.nodes[i]);
+        }
+        this.ids_that_have_a_node = game.ids_that_have_a_node; // Shallow copy, because this doesn't change throughout the game
+        this.num_grey_good = game.num_grey_good;
+        this.num_grey_bad = game.num_grey_bad;
+        this.edges = game.edges; // Shallow copy, because this doesn't change throughout the game
+        this.game_over = game.game_over;
+        this.redPlayer = new RedAgent(game.redPlayer);
+        this.bluePlayer = new BlueAgent(game.bluePlayer);
+    }
+
     public ArrayList<Integer> getOpinionCounts() {
         int goodCount = 0, badCount = 0;
         for (int id : ids_that_have_a_node) {

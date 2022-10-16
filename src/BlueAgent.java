@@ -13,6 +13,12 @@ public class BlueAgent {
         isDone = false;
     }
 
+    // Make a copy of this blue agent
+    public BlueAgent(BlueAgent x) {
+        this.energy = x.energy;
+        this.isDone = x.isDone;
+    }
+
     public void loseEnergy(int message_potency) {
         energy -= energyLostForEachPotency.get(message_potency);
     }
@@ -149,6 +155,7 @@ public class BlueAgent {
     }
 
 
+
     double priorGreyProb = 0.5;
     int numGreysObservedGood = 0;
     int numGreysObservedBad = 0;
@@ -158,29 +165,37 @@ public class BlueAgent {
         System.out.println("*** Blue agent's turn ***");
         // TODO: Learning strategy
         if (game.getNumGreys() >= 1) {
+            boolean releasingGrey = false;
+            
             ArrayList<Integer> opinionCounts = game.getOpinionCounts();
             int goodCount = opinionCounts.get(0);
             int badCount = opinionCounts.get(1);
             double propGoodGreens = (double)goodCount / (goodCount + badCount);
             
-            double probGettingGreensIfGreyReleased;
-            if (numGreysObservedGood == 0 && numGreysObservedBad == 0)
-                probGettingGreensIfGreyReleased = 0.5;
-            else if (numGreysObservedGood == 0) {
-                int assumeGood = 1;
-                int assumeBad = numGreysObservedBad * numGreysObservedBad;
-                probGettingGreensIfGreyReleased = (double)assumeGood / (assumeGood + assumeBad);
-            }
-            else if (numGreysObservedBad == 0) {
-                int assumeBad = 1;
-                int assumeGood = numGreysObservedGood * numGreysObservedGood;
-                probGettingGreensIfGreyReleased = (double)assumeGood / (assumeGood + assumeBad);
-            }
-            else
-                probGettingGreensIfGreyReleased = (double)numGreysObservedGood / (numGreysObservedGood + numGreysObservedBad);
+            if (energy < energyLostForEachPotency.get(1) && goodCount < badCount)
+                releasingGrey = true;
+            else {
+                double probGettingGreensIfGreyReleased;
+                if (numGreysObservedGood == 0 && numGreysObservedBad == 0)
+                    probGettingGreensIfGreyReleased = 0.5;
+                else if (numGreysObservedGood == 0) {
+                    int assumeGood = 1;
+                    int assumeBad = numGreysObservedBad * numGreysObservedBad;
+                    probGettingGreensIfGreyReleased = (double)assumeGood / (assumeGood + assumeBad);
+                }
+                else if (numGreysObservedBad == 0) {
+                    int assumeBad = 1;
+                    int assumeGood = numGreysObservedGood * numGreysObservedGood;
+                    probGettingGreensIfGreyReleased = (double)assumeGood / (assumeGood + assumeBad);
+                }
+                else
+                    probGettingGreensIfGreyReleased = (double)numGreysObservedGood / (numGreysObservedGood + numGreysObservedBad);
 
-            double bayesianProbGrey = priorGreyProb * probGettingGreensIfGreyReleased / propGoodGreens;
-            if (Math.random() < bayesianProbGrey) {
+                double bayesianProbGrey = priorGreyProb * probGettingGreensIfGreyReleased / propGoodGreens;
+                if (Math.random() < bayesianProbGrey)
+                    releasingGrey = true;
+            }
+            if (releasingGrey) {
                 doMove(game, -1);
                 ArrayList<Integer> newOpinionCounts = game.getOpinionCounts();
                 int newGoodCount = newOpinionCounts.get(0);
@@ -193,8 +208,6 @@ public class BlueAgent {
                 return;
             }
         }
-
-
-
+        
     }
 }

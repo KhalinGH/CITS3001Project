@@ -4,14 +4,22 @@ import java.util.Collections;
 import java.util.Scanner;
 
 public class RedAgent {
-    ArrayList<Node> greenFollowers;
+    ArrayList<Integer> greenFollowers;
     boolean isDone;
     static ArrayList<Double> uncertaintyForEachPotency = new ArrayList<Double>(Arrays.asList(-999.0, 0.8, 0.6, 0.4, 0.2, 0.0, -0.2, -0.4, -0.6, -0.8, -1.0));
     static ArrayList<Double> proportionFollowersLostForEachPotency = new ArrayList<Double>(Arrays.asList(-999.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50));
 
     public RedAgent() {
-        greenFollowers = new ArrayList<Node>();
+        greenFollowers = new ArrayList<Integer>();
         isDone = false;
+    }
+
+    // Make a copy of this red agent
+    public RedAgent(RedAgent x) {
+        this.greenFollowers = new ArrayList<Integer>();
+        for (int e : x.greenFollowers)
+            this.greenFollowers.add(e);
+        this.isDone = x.isDone;
     }
     
     public void loseFollowers(int message_potency) {
@@ -32,7 +40,7 @@ public class RedAgent {
         }
         loseFollowers(message_potency);
         Node redNode = new Node(uncertaintyForEachPotency.get(message_potency), false);
-        for (int id : game.ids_that_have_a_node)
+        for (int id : greenFollowers)
             Node.interact_one_way(redNode, game.nodes[id]);
     }
 
