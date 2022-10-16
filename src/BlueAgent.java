@@ -48,7 +48,7 @@ public class BlueAgent {
 
     public void makeHumanMove(GameState game, Scanner scanner) {
         System.out.println("*** Blue agent's turn ***");
-        System.out.println("ADMINISTRATOR: Enter '!v' to display visualisation of current network. Darker colours indicate more certainty of opinion");
+        System.out.println("ADMINISTRATOR: Enter '!v' to display visualisation of current network. Brighter colours indicate more certainty of opinion");
         System.out.println("ADMINISTRATOR: Enter '!t' to list all green nodes' opinions and uncertainties");
         String input = new String();
         if (isDone) {
