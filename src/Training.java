@@ -101,6 +101,9 @@ public class Training {
 
     public static void makeProbabilisticDecisionTrees(GameState game, boolean bluePlayerIsHuman, boolean redPlayerIsHuman) {
         if (bluePlayerIsHuman) {
+
+        }
+        if (redPlayerIsHuman) {
             
         }
     }
