@@ -178,8 +178,10 @@ public class BlueAgent {
     int numGreysObservedUnknown = 0;
     ArrayList<Double> probabilityDistributionNumRedFollowers;
     double lastMovePropGoodGreens = -1.0;
+    int numMoves = 0;
 
-    public void makeAIMove(GameState game) {
+    public void makeAIMove(GameState game, boolean bothAI) {
+        numMoves++;
         System.out.println("*** Blue agent's turn ***");
         
         ArrayList<Integer> opinionCounts = game.getOpinionCounts();
@@ -212,14 +214,13 @@ public class BlueAgent {
                 double adjustedPropGoodGreens = propGoodGreens;
                 if (adjustedPropGoodGreens < 0.3)
                     adjustedPropGoodGreens = 0.3;
-                System.out.println(priorGreyProb);
-                System.out.println(probGettingGreensIfGreyReleased);
-                System.out.println(adjustedPropGoodGreens);
                 double bayesianProbGrey = priorGreyProb * probGettingGreensIfGreyReleased / adjustedPropGoodGreens;
                 if (Math.random() < bayesianProbGrey)
                     releasingGrey = true;
             }
             if (releasingGrey) {
+                if (bothAI)
+                    System.out.println("Blue AI is releasing a grey agent");
                 doMove(game, -1);
                 ArrayList<Integer> newOpinionCounts = game.getOpinionCounts();
                 int newGoodCount = newOpinionCounts.get(0);
@@ -229,7 +230,8 @@ public class BlueAgent {
                     numGreysObservedBad++;
                 else
                     numGreysObservedUnknown++;
-                game.printStats();
+                if (bothAI)
+                    game.printStats();
                 System.out.println();
                 try {
                     Thread.sleep(2000);
@@ -237,7 +239,6 @@ public class BlueAgent {
                 catch (InterruptedException e) {
                     
                 }
-                game.listGreenData();
                 return;
             }
         }
@@ -250,9 +251,9 @@ public class BlueAgent {
             probabilityDistributionNumRedFollowers.add(1.0);
         }
         else { // If this is NOT our first move
-            double propUnconverted = propGoodGreens / lastMovePropGoodGreens;
-            assert(0 <= propUnconverted && propUnconverted <= 1);
-            double propConverted = 1 - propUnconverted; // The proportion of people who red just converted
+            double propNotConverted = propGoodGreens / lastMovePropGoodGreens;
+            assert(0 <= propNotConverted && propNotConverted <= 1);
+            double propConverted = 1 - propNotConverted; // The proportion of people who red just converted
 
             ArrayList<Double> FollowerLossTable = RedAgent.proportionFollowersLostForEachPotency;
             double highestPossiblePropFollowerLoss = FollowerLossTable.get(FollowerLossTable.size() - 1);
@@ -277,33 +278,31 @@ public class BlueAgent {
             for (int i = 0; i <= numNodes; i++)
                 temp.add(0.0);
             for (int i = 0; i <= numNodes; i++) {
-                double tot1 = 0;
-                for (double e : probabilityDistributionNumRedFollowers)
-                    tot1 += e;
-                if (Math.abs(tot1 - 1) > 0.1) {
-                    System.out.println(probabilityDistributionNumRedFollowers);
-                    System.exit(0);
-                }
                 double priorProbOfRedHavingThisManyFollowers = probabilityDistributionNumRedFollowers.get(i);
                 int minEstimateFollowerLoss = (int)(i * minEstimateProportionOfHighestPossibleLoss);
                 int maxEstimateFollowerLoss = (int)(i * maxEstimateProportionOfHighestPossibleLoss);
                 int sizeOfEstimateRange = maxEstimateFollowerLoss - minEstimateFollowerLoss + 1;
                 for (int j = i - maxEstimateFollowerLoss; j <= i - minEstimateFollowerLoss; j++)
-                    temp.set(j, temp.get(j) + priorProbOfRedHavingThisManyFollowers / sizeOfEstimateRange);
+                    if (0 <= j && j < temp.size())
+                        temp.set(j, temp.get(j) + priorProbOfRedHavingThisManyFollowers / sizeOfEstimateRange);
             }
             probabilityDistributionNumRedFollowers = temp;
-            
-            double tot = 0;
-            for (double e : temp)
-                tot += e;
-            if (Math.abs(tot - 1) > 0.1) {
-                System.out.println(temp);
-            }
         }
         lastMovePropGoodGreens = propGoodGreens;
 
         if (energy < energyLostForEachPotency.get(1)) {
+            if (bothAI)
+                System.out.println("Red AI is passing the remainder of their turns");
             doMove(game, 0);
+            if (bothAI)
+                game.printStats();
+            System.out.println();
+            try {
+                Thread.sleep(2000);
+            }
+            catch (InterruptedException e) {
+                
+            }
             return;
         }
         // Decide on a potency using the probabilitic decision tree
@@ -327,11 +326,15 @@ public class BlueAgent {
         }
         
         int potency = (int)Math.round(result);
+        if (numMoves >= 5)
+            while (potency <= 9 && energy >= energyLostForEachPotency.get(potency + 1))
+                potency++;
         if (potency == 0)
             potency = 1;
         while (energy < energyLostForEachPotency.get(potency))
             potency--;
-        System.out.println("Blue AI is sending a message with potency " + potency);
+        if (bothAI)
+            System.out.println("Blue AI is sending a message with potency " + potency);
         doMove(game, potency);
         game.printStats();
         System.out.println();
@@ -341,6 +344,5 @@ public class BlueAgent {
         catch (InterruptedException e) {
             
         }
-        game.listGreenData();
     }
 }

@@ -30,14 +30,13 @@ public class App {
             Training.makeProbabilisticDecisionTrees(game, bluePlayerIsHuman, redPlayerIsHuman);
         }
 
-        game.printStats();
         System.out.println();
 
         while (true) {
             if (bluePlayerIsHuman)
                 game.bluePlayer.makeHumanMove(game, scanner);
             else
-                game.bluePlayer.makeAIMove(game);
+                game.bluePlayer.makeAIMove(game, !redPlayerIsHuman);
 
                 if ((game.bluePlayer.isDone || game.bluePlayer.energy < BlueAgent.energyLostForEachPotency.get(1))
                 && (game.redPlayer.isDone || game.redPlayer.greenFollowers.size() * 10 < game.ids_that_have_a_node.size()))
@@ -46,7 +45,7 @@ public class App {
             if (redPlayerIsHuman)
                 game.redPlayer.makeHumanMove(game, scanner);
             else
-                game.redPlayer.makeAIMove(game);
+                game.redPlayer.makeAIMove(game, !bluePlayerIsHuman);
             
             if ((game.bluePlayer.isDone || game.bluePlayer.energy < BlueAgent.energyLostForEachPotency.get(1))
                 && (game.redPlayer.isDone || game.redPlayer.greenFollowers.size() * 10 < game.ids_that_have_a_node.size()))
@@ -55,7 +54,6 @@ public class App {
             System.out.println("Green nodes interacting with each other...");
             System.out.println();
             game.simulateGreenInteractions();
-            game.printStats(); // DEBUG: THIS LINE SHOULD NOT BE HERE
             try {
                 Thread.sleep(2000);
             }

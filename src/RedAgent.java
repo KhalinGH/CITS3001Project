@@ -143,14 +143,124 @@ public class RedAgent {
         catch (InterruptedException e) {
             
         }
-        game.listGreenData(); // DEBUG: This should not be here!!!
     }
 
-    public void makeAIMove(GameState game) {
+    ArrayList<Double> probabilityDistributionEnergy;
+    double lastMovePropGoodGreens = -1.0;
+    int numMoves = 0;
+
+    public void makeAIMove(GameState game, boolean bothAI) {
+        numMoves++;
         System.out.println("*** Red agent's turn ***");
 
-        // TOOO: Put this line: doMove(game, potency);
-        game.printStats();
+        ArrayList<Integer> opinionCounts = game.getOpinionCounts();
+        int goodCount = opinionCounts.get(0);
+        int badCount = opinionCounts.get(1);
+        double propGoodGreens = (double)goodCount / (goodCount + badCount);
+        
+        // Update our estimated probability distribution of blue's energy
+        if (lastMovePropGoodGreens == -1.0) { // If this is our first move
+            probabilityDistributionEnergy = new ArrayList<Double>();
+            for (int i = 0; i < 100; i++)
+                probabilityDistributionEnergy.add(0.0);
+            probabilityDistributionEnergy.add(1.0);
+        }
+        else { // If this is NOT our first move
+            double propConverted = (propGoodGreens - lastMovePropGoodGreens) / (1 - lastMovePropGoodGreens); // The proportion of people who blue just converted
+            ArrayList<Integer> EnergyLossTable = BlueAgent.energyLostForEachPotency;
+            double highestPossiblePropEnergyLoss = (double)EnergyLossTable.get(EnergyLossTable.size() - 1) / 100;
+            
+            // Use the proportion of people who red just converted to estimate the proportion of red's highest possible
+            // follower loss that red just chose to use
+            double proportionOfHighestPossibleLoss = propConverted / 4 / highestPossiblePropEnergyLoss;
+            if (proportionOfHighestPossibleLoss > 0.9)
+                proportionOfHighestPossibleLoss = 0.9;
+            
+            double minEstimateProportionOfHighestPossibleLoss = proportionOfHighestPossibleLoss - 0.1;
+            if (minEstimateProportionOfHighestPossibleLoss < 0)
+                minEstimateProportionOfHighestPossibleLoss = 0;
+            double maxEstimateProportionOfHighestPossibleLoss = proportionOfHighestPossibleLoss + 0.1;
+            if (maxEstimateProportionOfHighestPossibleLoss > 1)
+                maxEstimateProportionOfHighestPossibleLoss = 1;
+            
+            
+            ArrayList<Double> temp = new ArrayList<Double>();
+            for (int i = 0; i <= 100; i++)
+                temp.add(0.0);
+            for (int i = 0; i <= 100; i++) {
+                double priorProbOfBlueHavingThisMuchEnergy = probabilityDistributionEnergy.get(i);
+                int minEstimateFollowerLoss = (int)(i * minEstimateProportionOfHighestPossibleLoss);
+                int maxEstimateFollowerLoss = (int)(i * maxEstimateProportionOfHighestPossibleLoss);
+                int sizeOfEstimateRange = maxEstimateFollowerLoss - minEstimateFollowerLoss + 1;
+                for (int j = i - maxEstimateFollowerLoss; j <= i - minEstimateFollowerLoss; j++)
+                    if (0 <= j && j < temp.size())
+                        temp.set(j, temp.get(j) + priorProbOfBlueHavingThisMuchEnergy / sizeOfEstimateRange);
+            }
+            probabilityDistributionEnergy = temp;
+        }
+        lastMovePropGoodGreens = propGoodGreens;
+
+        if (greenFollowers.size() == 0) {
+            if (bothAI)
+                System.out.println("Red AI is passing the remainder of their turns");
+            doMove(game, 0);
+            if (bothAI)
+                game.printStats();
+            System.out.println();
+            try {
+                Thread.sleep(2000);
+            }
+            catch (InterruptedException e) {
+                
+            }
+            return;
+        }
+        
+        // Decide on a potency using the probabilitic decision tree
+        double result = 0.0;
+        for (int i = 0; i < probabilityDistributionEnergy.size(); i++) {
+            DecisionTreeNode n = decisionTree;
+
+            int child = Training.getChildNumber(propGoodGreens, DecisionTreeNode.numLeavesPropVoting);
+            n = n.children.get(child);
+            
+            double probabilityOfReachingThisNode = probabilityDistributionEnergy.get(i);
+            double proportionEnergy = (double)i / 100;
+            child = Training.getChildNumber(proportionEnergy, DecisionTreeNode.numLeavesPropEnergy);
+            n = n.children.get(child);
+            
+            double proportionFollowers = (double)greenFollowers.size() / game.ids_that_have_a_node.size();
+            child = Training.getChildNumber(proportionFollowers, DecisionTreeNode.numLeavesPropFollowers);
+            n = n.children.get(child);
+
+            result += probabilityOfReachingThisNode * n.averagePotencyFromLearningData;
+        }
+        
+        if (numMoves >= 4) {
+            int x = (int)(Math.random() * 3) + 8;
+            if (bothAI)
+                System.out.println("Red AI is sending a message with potency " + x);
+            doMove(game, x);
+            if (bothAI)
+                game.printStats();
+            System.out.println();
+            try {
+                Thread.sleep(2000);
+            }
+            catch (InterruptedException e) {
+                
+            }
+            return;
+        }
+        
+        int potency = (int)Math.round(result);
+        if (potency == 0)
+            potency = 1;
+        if (bothAI)
+            System.out.println("Red AI is sending a message with potency " + potency);
+        doMove(game, potency);
+        if (bothAI)
+            game.printStats();
         System.out.println();
         try {
             Thread.sleep(2000);
