@@ -64,7 +64,6 @@ public class Node {
                     b.uncertainty = 1;
             }
         }
-
     }
 
     public static void interactGreenGreen(Node a, Node b) {
