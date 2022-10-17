@@ -7,8 +7,8 @@ import java.util.Scanner;
 public class BlueAgent {
     int energy;
     boolean isDone;
-    static ArrayList<Double> uncertaintyForEachPotency = new ArrayList<Double>(Arrays.asList(-999.0, 0.8, 0.6, 0.4, 0.2, 0.0, -0.2, -0.4, -0.6, -0.8, -1.0));
-    static ArrayList<Integer> energyLostForEachPotency = new ArrayList<Integer>(Arrays.asList(-999, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40));
+    static ArrayList<Double> uncertaintyForEachPotency = new ArrayList<Double>(Arrays.asList(-999.0, 0.65, 0.5, 0.35, 0.2, 0.05, -0.1, -0.25, -0.4, -0.55, -0.7));
+    static ArrayList<Integer> energyLostForEachPotency = new ArrayList<Integer>(Arrays.asList(-999, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50));
     Map<GameState, Integer> learningData;
     DecisionTreeNode decisionTree;
 
@@ -38,9 +38,10 @@ public class BlueAgent {
             game.num_grey_good--;
         else
             game.num_grey_bad--;
-        Node greyNode = new Node(is_good, -1);
-        for (int id : game.ids_that_have_a_node)
-            Node.interact_one_way(greyNode, game.nodes[id]);
+        for (int id : game.ids_that_have_a_node) {
+            Node greyNode = new Node(is_good, -1);
+            Node.interact(greyNode, game.nodes[id]);
+        }
     }
 
     // A message_potency of -1 indicates that a grey agent is being released
@@ -55,9 +56,10 @@ public class BlueAgent {
             return;
         }
         loseEnergy(message_potency);
-        Node blueNode = new Node(uncertaintyForEachPotency.get(message_potency), true, -1);
-        for (int id : game.ids_that_have_a_node)
-            Node.interact_one_way(blueNode, game.nodes[id]);
+        for (int id : game.ids_that_have_a_node) {
+            Node blueNode = new Node(uncertaintyForEachPotency.get(message_potency), true, -1);
+            Node.interact(blueNode, game.nodes[id]);
+        }
     }
 
     public void makeHumanMove(GameState game, Scanner scanner) {
@@ -87,7 +89,7 @@ public class BlueAgent {
                     System.out.println("There is " + (game.num_grey_good + game.num_grey_bad) + " grey agent remaining.");
                 else
                     System.out.println("There are " + (game.num_grey_good + game.num_grey_bad) + " grey agents remaining.");
-                System.out.println("You do not have enough energy remaining to send a message. Enter 'g' to release a grey agent, or 'p' to pass the remainder of your turns (if you pass, the game will end when the red agent runs out of followers).");
+                System.out.println("You do not have enough energy remaining to send a message. Enter 'g' to release a grey agent, or 'p' to pass the remainder of your turns (if you pass, the game will end when the red agent falls below 10% of their initial followers).");
                 input = scanner.nextLine();
                 System.out.println();
                 if (input.toLowerCase().compareTo("g") == 0) {
@@ -170,7 +172,7 @@ public class BlueAgent {
 
 
 
-    double priorGreyProb = 0.5;
+    double priorGreyProb = 0.15;
     int numGreysObservedGood = 0;
     int numGreysObservedBad = 0;
     int numGreysObservedUnknown = 0;
@@ -179,7 +181,7 @@ public class BlueAgent {
 
     public void makeAIMove(GameState game) {
         System.out.println("*** Blue agent's turn ***");
-        // TODO: Learning strategy
+        
         ArrayList<Integer> opinionCounts = game.getOpinionCounts();
         int goodCount = opinionCounts.get(0);
         int badCount = opinionCounts.get(1);
@@ -210,16 +212,12 @@ public class BlueAgent {
                 double adjustedPropGoodGreens = propGoodGreens;
                 if (adjustedPropGoodGreens < 0.3)
                     adjustedPropGoodGreens = 0.3;
-                if (adjustedPropGoodGreens > 0.7)
-                    adjustedPropGoodGreens = 0.7;
                 System.out.println(priorGreyProb);
                 System.out.println(probGettingGreensIfGreyReleased);
                 System.out.println(adjustedPropGoodGreens);
                 double bayesianProbGrey = priorGreyProb * probGettingGreensIfGreyReleased / adjustedPropGoodGreens;
-                System.out.println("Probability that blue AI is releasing a grey agent now: " + bayesianProbGrey);
                 if (Math.random() < bayesianProbGrey)
                     releasingGrey = true;
-                System.out.println(releasingGrey ? "Blue AI released a grey agent" :  "Blue AI did not release a grey agent");
             }
             if (releasingGrey) {
                 doMove(game, -1);
@@ -231,6 +229,15 @@ public class BlueAgent {
                     numGreysObservedBad++;
                 else
                     numGreysObservedUnknown++;
+                game.printStats();
+                System.out.println();
+                try {
+                    Thread.sleep(2000);
+                }
+                catch (InterruptedException e) {
+                    
+                }
+                game.listGreenData();
                 return;
             }
         }
@@ -252,7 +259,9 @@ public class BlueAgent {
 
             // Use the proportion of people who red just converted to estimate the proportion of red's highest possible
             // follower loss that red just chose to use
-            double proportionOfHighestPossibleLoss = propConverted / highestPossiblePropFollowerLoss;
+            double proportionOfHighestPossibleLoss = propConverted / 4 / highestPossiblePropFollowerLoss;
+            if (proportionOfHighestPossibleLoss > 0.9)
+                proportionOfHighestPossibleLoss = 0.9;
 
             double minEstimateProportionOfHighestPossibleLoss = proportionOfHighestPossibleLoss - 0.1;
             if (minEstimateProportionOfHighestPossibleLoss < 0)
@@ -268,22 +277,37 @@ public class BlueAgent {
             for (int i = 0; i <= numNodes; i++)
                 temp.add(0.0);
             for (int i = 0; i <= numNodes; i++) {
+                double tot1 = 0;
+                for (double e : probabilityDistributionNumRedFollowers)
+                    tot1 += e;
+                if (Math.abs(tot1 - 1) > 0.1) {
+                    System.out.println(probabilityDistributionNumRedFollowers);
+                    System.exit(0);
+                }
                 double priorProbOfRedHavingThisManyFollowers = probabilityDistributionNumRedFollowers.get(i);
                 int minEstimateFollowerLoss = (int)(i * minEstimateProportionOfHighestPossibleLoss);
                 int maxEstimateFollowerLoss = (int)(i * maxEstimateProportionOfHighestPossibleLoss);
                 int sizeOfEstimateRange = maxEstimateFollowerLoss - minEstimateFollowerLoss + 1;
                 for (int j = i - maxEstimateFollowerLoss; j <= i - minEstimateFollowerLoss; j++)
-                    temp.set(j, priorProbOfRedHavingThisManyFollowers / sizeOfEstimateRange);
+                    temp.set(j, temp.get(j) + priorProbOfRedHavingThisManyFollowers / sizeOfEstimateRange);
             }
             probabilityDistributionNumRedFollowers = temp;
+            
+            double tot = 0;
+            for (double e : temp)
+                tot += e;
+            if (Math.abs(tot - 1) > 0.1) {
+                System.out.println(temp);
+            }
         }
         lastMovePropGoodGreens = propGoodGreens;
 
-        if (energy < energyLostForEachPotency.get(1))
+        if (energy < energyLostForEachPotency.get(1)) {
             doMove(game, 0);
+            return;
+        }
         // Decide on a potency using the probabilitic decision tree
         double result = 0.0;
-        System.out.println("Blue AI is calculating 'result' from the probabilistic decision tree:");
         for (int i = 0; i < probabilityDistributionNumRedFollowers.size(); i++) {
             DecisionTreeNode n = decisionTree;
 
@@ -300,7 +324,6 @@ public class BlueAgent {
             n = n.children.get(child);
 
             result += probabilityOfReachingThisNode * n.averagePotencyFromLearningData;
-            System.out.println(result);
         }
         
         int potency = (int)Math.round(result);
@@ -318,5 +341,6 @@ public class BlueAgent {
         catch (InterruptedException e) {
             
         }
+        game.listGreenData();
     }
 }

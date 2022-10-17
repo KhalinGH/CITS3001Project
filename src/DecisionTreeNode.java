@@ -11,6 +11,8 @@ public class DecisionTreeNode {
     public DecisionTreeNode() {
         children = new ArrayList<DecisionTreeNode>();
         numPiecesOfLearningData = 0;
-        averagePotencyFromLearningData = 3.0;
+        averagePotencyFromLearningData = Math.random() * 5 + 1;
+        if (averagePotencyFromLearningData >= 3)
+            averagePotencyFromLearningData += 4;
     }
 }

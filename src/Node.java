@@ -19,7 +19,7 @@ public class Node {
 
     // Grey node
     public Node(boolean isGood, int id) {
-        this.uncertainty = -1;
+        this.uncertainty = -0.5;
         this.opinion = isGood;
         this.id = id;
     }
@@ -31,29 +31,74 @@ public class Node {
         this.opinion = n.opinion;
         this.id = n.id;
     }
-
-    public static void changeParametersOfB(Node a, Node b) {
-        assert(a.uncertainty < b.uncertainty);
-        if (a.opinion == b.opinion)
-            b.uncertainty -= (b.uncertainty - a.uncertainty) / 2;
-        else {
-            b.opinion = a.opinion;
-            b.uncertainty = 1 - (b.uncertainty - a.uncertainty);
-        }
-    }
-
-    public static void interact_one_way(Node a, Node b) {
-        if (a.uncertainty < b.uncertainty) {
-            changeParametersOfB(a, b);
-        }
-    }
     
-    public static void interact_two_way(Node a, Node b) {
-        if (a.uncertainty < b.uncertainty) {
-            changeParametersOfB(a, b);
+    public static void interact(Node a, Node b) {
+        if (a.uncertainty >= b.uncertainty) {
+            // Switch the variables a and b
+            Node temp = a;
+            a = b;
+            b = temp;
         }
-        else if (b.uncertainty < a.uncertainty) {
-            changeParametersOfB(b, a);
+        // So now we know that a.uncertainty < b.uncertainty
+        
+        if (a.opinion == b.opinion) {
+            b.uncertainty -= (b.uncertainty - a.uncertainty) / 2;
         }
+        else { // a.opinion != b.opinion
+            double probOpinionChange = (b.uncertainty - a.uncertainty);
+            if (probOpinionChange > 0.9)
+                probOpinionChange = 0.9;
+            
+            // If b changes their opinion
+            if (Math.random() < probOpinionChange) {
+                b.opinion = a.opinion;
+                b.uncertainty = 1 - (b.uncertainty - a.uncertainty);
+            }
+            // If b does not change their opinion
+            else {
+                a.uncertainty += (1 - b.uncertainty) / 2;
+                if (a.uncertainty > 1)
+                    a.uncertainty = 1;
+                b.uncertainty += (1 - a.uncertainty) / 2;
+                if (b.uncertainty > 1)
+                    b.uncertainty = 1;
+            }
+        }
+
+    }
+
+    public static void interactGreenGreen(Node a, Node b) {
+        if (a.uncertainty >= b.uncertainty) {
+            // Switch the variables a and b
+            Node temp = a;
+            a = b;
+            b = temp;
+        }
+        // So now we know that a.uncertainty < b.uncertainty
+        
+        if (a.opinion == b.opinion) {
+            b.uncertainty -= (b.uncertainty - a.uncertainty) / 40;
+        }
+        else { // a.opinion != b.opinion
+            double probOpinionChange = (b.uncertainty - a.uncertainty) / 20;
+            if (probOpinionChange > 0.9)
+                probOpinionChange = 0.9;
+            
+            // If b changes their opinion
+            if (Math.random() < probOpinionChange) {
+                b.opinion = a.opinion;
+                b.uncertainty = 1 - (b.uncertainty - a.uncertainty);
+            }
+            // If b does not change their opinion
+            else {
+                a.uncertainty += (1 - b.uncertainty) / 40;
+                if (a.uncertainty > 1)
+                    a.uncertainty = 1;
+                b.uncertainty += (1 - a.uncertainty) / 40;
+                if (b.uncertainty > 1)
+                    b.uncertainty = 1;
+            }
+        }
+
     }
 }

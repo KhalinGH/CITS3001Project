@@ -88,7 +88,7 @@ public class Training {
             depth = 3;
         for (int i = 0; i < numGames; i++) {
             GameState game = new GameState(x, false);
-            App.addProportionOfEdges(game, Math.random());
+            App.addProportionOfEdges(game, Math.random() / 50);
             while (true) {
                 int bestMoveBlue = (int)Math.round(run(game, true, depth).get(0));
                 if (bestMoveBlue != 0) {
@@ -153,6 +153,8 @@ public class Training {
             child = getChildNumber(proportionFollowers, DecisionTreeNode.numLeavesPropFollowers);
             n = n.children.get(child);
             
+            if (entry.getValue() == 1)
+                continue;
             if (n.numPiecesOfLearningData == 0)
                 n.averagePotencyFromLearningData = 0.0;
             double totalPotencyFromLearningData = n.averagePotencyFromLearningData * n.numPiecesOfLearningData;

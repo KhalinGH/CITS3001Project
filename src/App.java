@@ -24,13 +24,14 @@ public class App {
 
         if (!bluePlayerIsHuman || !redPlayerIsHuman) {
             System.out.println("Training agents and building probabilistic decision trees...");
-            System.out.println("This should be done within about 10 seconds.");
+            System.out.println("This should be done within about 15 seconds.");
             System.out.println();
             Training.trainOnGames(game);
             Training.makeProbabilisticDecisionTrees(game, bluePlayerIsHuman, redPlayerIsHuman);
         }
 
         game.printStats();
+        System.out.println();
 
         while (true) {
             if (bluePlayerIsHuman)
@@ -38,7 +39,8 @@ public class App {
             else
                 game.bluePlayer.makeAIMove(game);
 
-            if (game.bluePlayer.isDone && game.redPlayer.isDone)
+                if ((game.bluePlayer.isDone || game.bluePlayer.energy < BlueAgent.energyLostForEachPotency.get(1))
+                && (game.redPlayer.isDone || game.redPlayer.greenFollowers.size() * 10 < game.ids_that_have_a_node.size()))
                 break;
 
             if (redPlayerIsHuman)
@@ -46,10 +48,20 @@ public class App {
             else
                 game.redPlayer.makeAIMove(game);
             
-            if (game.bluePlayer.isDone && game.redPlayer.isDone)
+            if ((game.bluePlayer.isDone || game.bluePlayer.energy < BlueAgent.energyLostForEachPotency.get(1))
+                && (game.redPlayer.isDone || game.redPlayer.greenFollowers.size() * 10 < game.ids_that_have_a_node.size()))
                 break;
             
+            System.out.println("Green nodes interacting with each other...");
+            System.out.println();
             game.simulateGreenInteractions();
+            game.printStats(); // DEBUG: THIS LINE SHOULD NOT BE HERE
+            try {
+                Thread.sleep(2000);
+            }
+            catch (InterruptedException e) {
+                
+            }
         }
 
         System.out.println("*** GAME OVER ***");
@@ -149,7 +161,7 @@ public class App {
         if (input.compareTo("p") == 0) {
             int num_green_agents;
             while (true) {
-                System.out.println("Enter the number of green team members (maximum 1000).");
+                System.out.println("Enter the number of green team members (maximum 1000). [RECOMMENDED: 200]");
                 input = scanner.nextLine();
                 System.out.println();
                 try {
@@ -312,7 +324,7 @@ public class App {
         if (input.compareTo("p") == 0) {
             double prob_edge;
             while (true) {
-                System.out.println("Enter the percentage of possible edges that should be a real edge (from 0 to 100).");
+                System.out.println("Enter the percentage of possible edges that should be a real edge (from 0 to 100) [For the design of this game, PLEASE USE NO MORE THAN ABOUT 5% ON REASONABLY LARGE NETWORKS. Don't make the network dense at all, as this is super unrealistic in a real country, and will cause the green team members to consolidate their opinions amongst themselves every move].");
                 input = scanner.nextLine();
                 System.out.println();
                 // If the input ends with "%" or " %", then remove that ending from the input

@@ -8,8 +8,8 @@ import java.util.Scanner;
 public class RedAgent {
     ArrayList<Node> greenFollowers;
     boolean isDone;
-    static ArrayList<Double> uncertaintyForEachPotency = new ArrayList<Double>(Arrays.asList(-999.0, 0.8, 0.6, 0.4, 0.2, 0.0, -0.2, -0.4, -0.6, -0.8, -1.0));
-    static ArrayList<Double> proportionFollowersLostForEachPotency = new ArrayList<Double>(Arrays.asList(-999.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50));
+    static ArrayList<Double> uncertaintyForEachPotency = new ArrayList<Double>(Arrays.asList(-999.0, 0.25, 0.1, -0.05, -0.2, -0.35, -0.5, -0.65, -0.7, -0.85, -1.0));
+    static ArrayList<Double> proportionFollowersLostForEachPotency = new ArrayList<Double>(Arrays.asList(-999.0, 0.04, 0.08, 0.12, 0.16, 0.20, 0.24, 0.28, 0.32, 0.36, 0.40));
     Map<GameState, Integer> learningData;
     DecisionTreeNode decisionTree;
 
@@ -47,9 +47,10 @@ public class RedAgent {
             return;
         }
         loseFollowers(message_potency);
-        Node redNode = new Node(uncertaintyForEachPotency.get(message_potency), false, -1);
-        for (Node n : greenFollowers)
-            Node.interact_one_way(redNode, n);
+        for (Node n : greenFollowers) {
+            Node redNode = new Node(uncertaintyForEachPotency.get(message_potency), false, -1);
+            Node.interact(redNode, n);
+        }
     }
 
     public void makeHumanMove(GameState game, Scanner scanner) {
@@ -136,10 +137,26 @@ public class RedAgent {
         doMove(game, message_potency);
         game.printStats();
         System.out.println();
+        try {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException e) {
+            
+        }
+        game.listGreenData(); // DEBUG: This should not be here!!!
     }
 
     public void makeAIMove(GameState game) {
         System.out.println("*** Red agent's turn ***");
-        // TODO: Learning strategy
+
+        // TOOO: Put this line: doMove(game, potency);
+        game.printStats();
+        System.out.println();
+        try {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException e) {
+            
+        }
     }
 }

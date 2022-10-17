@@ -38,9 +38,9 @@ public class GameState {
     }
 
     public void listGreenData() {
-        System.out.println("Opinion\t Uncertainty");
+        System.out.println("Opinion\t\tUncertainty");
         for (int id : ids_that_have_a_node)
-            System.out.println(nodes[id].opinion + "\t " + nodes[id].uncertainty);
+            System.out.println((nodes[id].opinion ? "Voting\t\t" : "Not voting\t") + nodes[id].uncertainty);
         System.out.println();
     }
 
@@ -70,7 +70,7 @@ public class GameState {
         else
             this.edges = new ArrayList<ArrayList<Integer>>();
         this.bluePlayer = new BlueAgent(game.bluePlayer);
-        this.redPlayer = new RedAgent(game.redPlayer, game);
+        this.redPlayer = new RedAgent(game.redPlayer, this);
     }
 
     public ArrayList<Integer> getOpinionCounts() {
@@ -110,8 +110,7 @@ public class GameState {
     }
 
     public void simulateGreenInteractions() {
-        for (ArrayList<Integer> edge : edges) {
-            Node.interact_two_way(nodes[edge.get(0)], nodes[edge.get(1)]);
-        }
+        for (ArrayList<Integer> edge : edges)
+            Node.interactGreenGreen(nodes[edge.get(0)], nodes[edge.get(1)]);
     }
 }
