@@ -19,7 +19,7 @@ public class Node {
 
     // Grey node
     public Node(boolean isGood, int id) {
-        this.uncertainty = 0;
+        this.uncertainty = -1;
         this.opinion = isGood;
         this.id = id;
     }
@@ -33,7 +33,13 @@ public class Node {
     }
 
     public static void changeParametersOfB(Node a, Node b) {
-        // TODO: Change b.opinion and/or b.uncertainty based on a.opinion and/or a.uncertainty
+        assert(a.uncertainty < b.uncertainty);
+        if (a.opinion == b.opinion)
+            b.uncertainty -= (b.uncertainty - a.uncertainty) / 2;
+        else {
+            b.opinion = a.opinion;
+            b.uncertainty = 1 - (b.uncertainty - a.uncertainty);
+        }
     }
 
     public static void interact_one_way(Node a, Node b) {

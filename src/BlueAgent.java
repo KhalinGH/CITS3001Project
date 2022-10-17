@@ -62,8 +62,8 @@ public class BlueAgent {
 
     public void makeHumanMove(GameState game, Scanner scanner) {
         System.out.println("*** Blue agent's turn ***");
-        System.out.println("ADMINISTRATOR: Enter '!v' to display visualisation of current network. Brighter colours indicate more certainty of opinion");
-        System.out.println("ADMINISTRATOR: Enter '!t' to list all green nodes' opinions and uncertainties");
+        System.out.println("ADMINISTRATOR: Enter '!v' to display visualisation of current network. Brighter colours indicate more certainty of opinion.");
+        System.out.println("ADMINISTRATOR: Enter '!t' to list all green nodes' opinions and uncertainties.");
         String input = new String();
         if (isDone) {
             game.printStats();
@@ -160,6 +160,12 @@ public class BlueAgent {
         doMove(game, message_potency);
         game.printStats();
         System.out.println();
+        try {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException e) {
+            
+        }
     }
 
 
@@ -168,17 +174,19 @@ public class BlueAgent {
     int numGreysObservedGood = 0;
     int numGreysObservedBad = 0;
     int numGreysObservedUnknown = 0;
+    ArrayList<Double> probabilityDistributionNumRedFollowers;
+    double lastMovePropGoodGreens = -1.0;
 
     public void makeAIMove(GameState game) {
         System.out.println("*** Blue agent's turn ***");
         // TODO: Learning strategy
+        ArrayList<Integer> opinionCounts = game.getOpinionCounts();
+        int goodCount = opinionCounts.get(0);
+        int badCount = opinionCounts.get(1);
+        double propGoodGreens = (double)goodCount / (goodCount + badCount);
         if (game.getNumGreys() >= 1) {
             boolean releasingGrey = false;
             
-            ArrayList<Integer> opinionCounts = game.getOpinionCounts();
-            int goodCount = opinionCounts.get(0);
-            int badCount = opinionCounts.get(1);
-            double propGoodGreens = (double)goodCount / (goodCount + badCount);
             
             if (energy < energyLostForEachPotency.get(1) && goodCount < badCount)
                 releasingGrey = true;
@@ -188,20 +196,30 @@ public class BlueAgent {
                     probGettingGreensIfGreyReleased = 0.5;
                 else if (numGreysObservedGood == 0) {
                     int assumeGood = 1;
-                    int assumeBad = numGreysObservedBad * numGreysObservedBad;
+                    int assumeBad = (numGreysObservedBad + 1) * (numGreysObservedBad + 1);
                     probGettingGreensIfGreyReleased = (double)assumeGood / (assumeGood + assumeBad);
                 }
                 else if (numGreysObservedBad == 0) {
                     int assumeBad = 1;
-                    int assumeGood = numGreysObservedGood * numGreysObservedGood;
+                    int assumeGood = (numGreysObservedGood + 1) * (numGreysObservedGood + 1);
                     probGettingGreensIfGreyReleased = (double)assumeGood / (assumeGood + assumeBad);
                 }
                 else
                     probGettingGreensIfGreyReleased = (double)numGreysObservedGood / (numGreysObservedGood + numGreysObservedBad);
-
-                double bayesianProbGrey = priorGreyProb * probGettingGreensIfGreyReleased / propGoodGreens;
+                
+                double adjustedPropGoodGreens = propGoodGreens;
+                if (adjustedPropGoodGreens < 0.3)
+                    adjustedPropGoodGreens = 0.3;
+                if (adjustedPropGoodGreens > 0.7)
+                    adjustedPropGoodGreens = 0.7;
+                System.out.println(priorGreyProb);
+                System.out.println(probGettingGreensIfGreyReleased);
+                System.out.println(adjustedPropGoodGreens);
+                double bayesianProbGrey = priorGreyProb * probGettingGreensIfGreyReleased / adjustedPropGoodGreens;
+                System.out.println("Probability that blue AI is releasing a grey agent now: " + bayesianProbGrey);
                 if (Math.random() < bayesianProbGrey)
                     releasingGrey = true;
+                System.out.println(releasingGrey ? "Blue AI released a grey agent" :  "Blue AI did not release a grey agent");
             }
             if (releasingGrey) {
                 doMove(game, -1);
@@ -217,6 +235,88 @@ public class BlueAgent {
             }
         }
 
+        // Update our estimated probability distribution of red's number of followers
+        if (lastMovePropGoodGreens == -1.0) { // If this is our first move
+            probabilityDistributionNumRedFollowers = new ArrayList<Double>();
+            for (int i = 0; i < game.ids_that_have_a_node.size(); i++)
+                probabilityDistributionNumRedFollowers.add(0.0);
+            probabilityDistributionNumRedFollowers.add(1.0);
+        }
+        else { // If this is NOT our first move
+            double propUnconverted = propGoodGreens / lastMovePropGoodGreens;
+            assert(0 <= propUnconverted && propUnconverted <= 1);
+            double propConverted = 1 - propUnconverted; // The proportion of people who red just converted
+
+            ArrayList<Double> FollowerLossTable = RedAgent.proportionFollowersLostForEachPotency;
+            double highestPossiblePropFollowerLoss = FollowerLossTable.get(FollowerLossTable.size() - 1);
+
+            // Use the proportion of people who red just converted to estimate the proportion of red's highest possible
+            // follower loss that red just chose to use
+            double proportionOfHighestPossibleLoss = propConverted / highestPossiblePropFollowerLoss;
+
+            double minEstimateProportionOfHighestPossibleLoss = proportionOfHighestPossibleLoss - 0.1;
+            if (minEstimateProportionOfHighestPossibleLoss < 0)
+                minEstimateProportionOfHighestPossibleLoss = 0;
+            double maxEstimateProportionOfHighestPossibleLoss = proportionOfHighestPossibleLoss + 0.1;
+            if (maxEstimateProportionOfHighestPossibleLoss > 1)
+                maxEstimateProportionOfHighestPossibleLoss = 1;
+            
+            
+            
+            int numNodes = game.ids_that_have_a_node.size();
+            ArrayList<Double> temp = new ArrayList<Double>();
+            for (int i = 0; i <= numNodes; i++)
+                temp.add(0.0);
+            for (int i = 0; i <= numNodes; i++) {
+                double priorProbOfRedHavingThisManyFollowers = probabilityDistributionNumRedFollowers.get(i);
+                int minEstimateFollowerLoss = (int)(i * minEstimateProportionOfHighestPossibleLoss);
+                int maxEstimateFollowerLoss = (int)(i * maxEstimateProportionOfHighestPossibleLoss);
+                int sizeOfEstimateRange = maxEstimateFollowerLoss - minEstimateFollowerLoss + 1;
+                for (int j = i - maxEstimateFollowerLoss; j <= i - minEstimateFollowerLoss; j++)
+                    temp.set(j, priorProbOfRedHavingThisManyFollowers / sizeOfEstimateRange);
+            }
+            probabilityDistributionNumRedFollowers = temp;
+        }
+        lastMovePropGoodGreens = propGoodGreens;
+
+        if (energy < energyLostForEachPotency.get(1))
+            doMove(game, 0);
+        // Decide on a potency using the probabilitic decision tree
+        double result = 0.0;
+        System.out.println("Blue AI is calculating 'result' from the probabilistic decision tree:");
+        for (int i = 0; i < probabilityDistributionNumRedFollowers.size(); i++) {
+            DecisionTreeNode n = decisionTree;
+
+            int child = Training.getChildNumber(propGoodGreens, DecisionTreeNode.numLeavesPropVoting);
+            n = n.children.get(child);
+            
+            double proportionEnergy = (double)energy / 100;
+            child = Training.getChildNumber(proportionEnergy, DecisionTreeNode.numLeavesPropEnergy);
+            n = n.children.get(child);
+            
+            double probabilityOfReachingThisNode = probabilityDistributionNumRedFollowers.get(i);
+            double proportionFollowers = (double)i / game.ids_that_have_a_node.size();
+            child = Training.getChildNumber(proportionFollowers, DecisionTreeNode.numLeavesPropFollowers);
+            n = n.children.get(child);
+
+            result += probabilityOfReachingThisNode * n.averagePotencyFromLearningData;
+            System.out.println(result);
+        }
         
+        int potency = (int)Math.round(result);
+        if (potency == 0)
+            potency = 1;
+        while (energy < energyLostForEachPotency.get(potency))
+            potency--;
+        System.out.println("Blue AI is sending a message with potency " + potency);
+        doMove(game, potency);
+        game.printStats();
+        System.out.println();
+        try {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException e) {
+            
+        }
     }
 }

@@ -30,6 +30,8 @@ public class App {
             Training.makeProbabilisticDecisionTrees(game, bluePlayerIsHuman, redPlayerIsHuman);
         }
 
+        game.printStats();
+
         while (true) {
             if (bluePlayerIsHuman)
                 game.bluePlayer.makeHumanMove(game, scanner);
